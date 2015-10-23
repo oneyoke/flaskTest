@@ -169,7 +169,7 @@
         editor.getSession().setMode(new CppMode());
         editor.$blockScrolling = Infinity;
         editor.setOptions({
-            maxLines: Infinity,
+            maxLines: 20,
             readOnly: true  // will be unset, when AJAX fetching request is done.
         });
 
@@ -180,6 +180,7 @@
                 url: "{{ url_for('target_content_exchange') }}",
                 method : 'GET',
                 urlEncoded : false,
+                buttonChecked: $('exampleSelect-1').checked,
                 onRequest : function() {
                     editor.setReadOnly(true);
                     $('submitButton').addClass('disabled');
@@ -207,7 +208,7 @@
             }),
             commitingRequest = new Request.JSON({
                 url: "{{ url_for('target_content_exchange') }}",
-                //data : ,
+                //data :,
                 method : 'POST',
                 urlEncoded : false,
                 onRequest : function() {
@@ -232,7 +233,7 @@
                          },
             });
 
-        fetchingRequest.send();
+        fetchingRequest.send('radio='+$$('input[name=exampleSelect]:checked').map(function(e) { return e.value; })[0]);
 
         $('submitButton').addEvent('click', function(e){
                 e.stop();
@@ -241,7 +242,7 @@
             } );
         $('retrieveButton').addEvent('click', function(e){
                 e.stop();
-                fetchingRequest.send();
+                fetchingRequest.send('radio='+$$('input[name=exampleSelect]:checked').map(function(e) { return e.value; })[0]);
             } );
     }); </script>
 </head>
@@ -251,7 +252,14 @@
         <div id="editor" style="min-width: 400pt; min-height: 100pt; width:100%; display: block;"></div>
         <ul id="errorsList"></ul>
 	<a href="#" class="button white" style="text-decoration: none" id="retrieveButton">Считать</a>
-        <a href="#" class="button white" style="text-decoration: none" id="submitButton">Загрузить</a>
+    <a href="#" class="button white" style="text-decoration: none" id="submitButton">Загрузить</a>
+
+<!--     <ul id="exampleSelect">
+        <input checked="" id="exampleSelect-0" name="exampleSelect" value="value" type="radio">description<br/>
+        <input id="exampleSelect-1" name="exampleSelect" value="value_two" type="radio">whatever
+    </ul> -->
+    {{ exampleSelect.exampleSelect() }}
+         
     </div>
 </body>
 </html>

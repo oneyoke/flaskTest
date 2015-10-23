@@ -3,20 +3,52 @@
 
 from flask import Flask, render_template, request, abort, jsonify
 from flask_wtf.csrf import CsrfProtect
+
+#RadioField
+from flask.ext.wtf import Form
+from wtforms import RadioField
+from wtforms.validators import DataRequired
+
+
+examples = [('lcd',u'Светодиодный дисплей'),
+            ('weather',u'Погодная станция'),
+            ('ssd',u'7-ми сегментный индикатор'),
+            ('stopwatch',u'Секундомер'),
+            ('rgbled',u'Трехцветный диод')]
+
+exampleValues = [choice[0] for choice in examples]   
+        
+
+class ExampleSelectForm(Form):
+    exampleSelect = RadioField('exampleSelect',
+        choices=examples,
+        default='lcd',
+        validators=[DataRequired()])
+
 app = Flask(__name__)
 
 CsrfProtect(app)
 app.debug = False                    # TODO: change this to False on real server
 app.secret_key = 'SuperS3cr3tK3y'   # TODO: change this to something more yours
-targetDilePath = 'upload.ino'
+targetFilePath = 'upload.ino'
 
-@app.route('/target_content_exchange/', methods=['GET', 'POST'])
+@app.route('/target_content_exchange', methods=['GET','POST'])
 def target_content_exchange():
+    #exampleSelect = ExampleSelectForm()
+    #import pdb; pdb.set_trace()
     if 'GET' == request.method:
         f = None
         outDict = {}
+        radio = request.args.get('radio')
+        if radio in exampleValues:
+            #print(radio+' was found')
+            exampleFilePath = radio+'.ino'
+        else:
+            #print('radio value was not found')
+            exampleFilePath = 'lcd.ino'
+        
         try:
-            f = open(targetDilePath, 'r+')
+            f = open('examples/'+exampleFilePath, 'r+')
             outDict['content'] = f.read()
             f.close()
             outDict['exists'] = True
@@ -35,14 +67,17 @@ def target_content_exchange():
             # data bewaring of some malicious operations that can be caused by invalid
             # data. Also, try to minimize execution time of routine because HTTP connection
             # doesn't like to wait too much.
-            f = open(targetDilePath, 'w+')
+            f = open(targetFilePath, 'w+')
             f.write( request.json['content'] )
             f.close()
             return jsonify({'result': 'updated'})
 
 @app.route('/', methods=['GET'])
 def index_view():
-    return render_template('index.html')
+    exampleSelect = ExampleSelectForm()
+    return render_template('index.html',
+                            exampleSelect=exampleSelect)
 
 if __name__ == '__main__':
+    #app.run(host="0.0.0.0",port=5002,debug=True)
     app.run(host="0.0.0.0")
