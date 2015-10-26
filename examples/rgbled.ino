@@ -2,6 +2,7 @@ int REDpin = 29;
 int GREENpin = 30;
 int BLUEpin = 31;
 void setup(){}
+//Главный цикл
 void loop(){
   for(int value = 0 ; value <= 255; value +=1) { 
     analogWrite(REDpin, value);

@@ -9,6 +9,8 @@ from flask.ext.wtf import Form
 from wtforms import RadioField
 from wtforms.validators import DataRequired
 
+#Unicode files
+import codecs
 
 examples = [('lcd',u'Светодиодный дисплей'),
             ('weather',u'Погодная станция'),
@@ -48,7 +50,7 @@ def target_content_exchange():
             exampleFilePath = 'lcd.ino'
         
         try:
-            f = open('examples/'+exampleFilePath, 'r+')
+            f = codecs.open('examples/'+exampleFilePath, 'r+','utf-8')
             outDict['content'] = f.read()
             f.close()
             outDict['exists'] = True
@@ -67,7 +69,9 @@ def target_content_exchange():
             # data bewaring of some malicious operations that can be caused by invalid
             # data. Also, try to minimize execution time of routine because HTTP connection
             # doesn't like to wait too much.
-            f = open(targetFilePath, 'w+')
+            
+            # Write data in Unicode
+            f = codecs.open(targetFilePath, 'w+','utf-8')
             f.write( request.json['content'] )
             f.close()
             return jsonify({'result': 'updated'})
