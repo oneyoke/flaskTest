@@ -12,6 +12,8 @@ from wtforms.validators import DataRequired
 #Unicode files
 import codecs
 
+from subprocess import Popen
+
 examples = [('lcd',u'Светодиодный дисплей'),
             ('weather',u'Погодная станция'),
             ('ssd',u'7-ми сегментный индикатор'),
@@ -39,25 +41,37 @@ def target_content_exchange():
     #exampleSelect = ExampleSelectForm()
     #import pdb; pdb.set_trace()
     if 'GET' == request.method:
-        f = None
-        outDict = {}
         radio = request.args.get('radio')
-        if radio in exampleValues:
-            #print(radio+' was found')
-            exampleFilePath = radio+'.ino'
-        else:
-            #print('radio value was not found')
-            exampleFilePath = 'lcd.ino'
-        
-        try:
-            f = codecs.open('examples/'+exampleFilePath, 'r+','utf-8')
-            outDict['content'] = f.read()
-            f.close()
-            outDict['exists'] = True
-        except FileNotFoundError:
-            outDict['exists'] = False
-        finally:
+        if radio != None: 
+            f = None
+            outDict = {}
+            radio = request.args.get('radio')
+            if radio in exampleValues:
+                print(radio+' was found')
+                exampleFilePath = radio+'.ino'
+            else:
+                print('radio value was not found')
+                exampleFilePath = 'lcd.ino'
+            
+            try:
+                f = codecs.open('examples/'+exampleFilePath, 'r+','utf-8')
+                outDict['content'] = f.read()
+                f.close()
+                outDict['exists'] = True
+            except FileNotFoundError:
+                outDict['exists'] = False
+            finally:
+                return jsonify(outDict)
+        script = request.args.get('script')        
+        if script != None:
+            outDict = {}
+            proc = Popen(['/home/pi/test/b_test.sh'], shell=True, stderr=None, stdout=None, stdin=None, close_fds=True)
+            outDict['script'] = True
             return jsonify(outDict)
+
+        outDict = {}
+        outDict['error'] = True    
+
     elif 'POST' == request.method:
         if( not request.json ):
             print( 'No JSON data at POST request!' )
