@@ -109,6 +109,35 @@
                          },
             });
 
+            scriptRequest = new Request.JSON({
+
+                url: "{{ url_for('target_content_exchange') }}",
+                //data :,
+                method : 'GET',
+                urlEncoded : false,
+                onRequest : function() {
+                    editor.setReadOnly(true);
+                    //$('submitButton').addClass('disabled');
+                    //$('retrieveButton').addClass('disabled');
+                    //$('scriptButton').addClass('disabled');
+                },
+                onComplete : function(rqd) {
+                    if( rqd &&
+                        rqd.hasOwnProperty('script') &&
+                        rqd.script == true /*&&
+                        rqd.hasOwnProperty('digest')*/ ) {
+                        editor.setReadOnly(false);
+                        //$('submitButton').removeClass('disabled');
+                    } else {
+                        // TODO: detailed error description can be provided here this way:
+                        $('errorsList').grab( new Element('li', {'text' : 'Got a server error.'}) );
+                    }
+                },
+                headers : { "X-CSRFToken": "{{ csrf_token() }}",
+                            'Content-type' : 'application/json',
+                         },
+            });
+
         fetchingRequest.send('radio='+$$('input[name=exampleSelect]:checked').map(function(e) { return e.value; })[0]);
 
         $('submitButton').addEvent('click', function(e){
@@ -116,6 +145,12 @@
                 commitingRequest.data
                 commitingRequest.post(JSON.encode({'content' : editor.getSession().getValue()}));
             } );
+
+        $('scriptButton').addEvent('click', function(e){
+                e.stop();
+                scriptRequest.send('script=b_test');
+            } );
+
         $('retrieveButton').addEvent('click', function(e){
                 e.stop();
                 fetchingRequest.send('radio='+$$('input[name=exampleSelect]:checked').map(function(e) { return e.value; })[0]);
@@ -403,6 +438,9 @@ ul {
                 
                     <a href="#" class="button white" style="text-decoration: none" id="submitButton" title
 ="Загрузить"><img src="http://109.123.177.216/img/download.png" style="vertical-align:middle"></a>
+
+                    <a href="#" class="button white" style="text-decoration: none" id="scriptButton" title
+="Скрипт"><img style="vertical-align:middle"></a>
             </ul><!--Конец блока "tabs"-->
         </div><!--Конец блока "panel-title"-->
     </div><!--Конец блока "content-box-header"-->
