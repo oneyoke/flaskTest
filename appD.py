@@ -12,6 +12,7 @@ from wtforms.validators import DataRequired
 #Unicode write
 import codecs
 
+from subprocess import Popen
 
 examples = [('lcd',u'Светодиодный дисплей'),
             ('weather',u'Погодная станция'),
@@ -82,6 +83,15 @@ def index_view():
     exampleSelect = ExampleSelectForm()
     return render_template('index.html',
                             exampleSelect=exampleSelect)
+
+@app.route('/compile', methods=['GET'])
+def subprocess_compile():
+    proc = Popen(['/home/pi/clone_test/only_build.sh'], shell=True, stderr=None, stdout=None, stdin=None, close_fds=True) 
+    outDict = {}
+    outDict['compile'] = True  
+    f = codecs.open('build.log', 'r+','utf-8')
+    outDict['content'] = f.read()
+    return jsonify(outDict)
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=5002,debug=True)
