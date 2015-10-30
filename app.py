@@ -68,6 +68,13 @@ def target_content_exchange():
             proc = Popen(['/home/pi/test/b_test.sh'], shell=True, stderr=None, stdout=None, stdin=None, close_fds=True)
             outDict['script'] = True
             return jsonify(outDict)
+	build = request.args.get('build')
+	if build != None:
+            outDict = {}
+            proc = Popen(['/home/pi/test/build.sh'], shell=True, stderr=None, stdout=None, stdin=None, close_fds=True)
+            outDict['build'] = True
+            return jsonify(outDict)
+
 
         outDict = {}
         outDict['error'] = True    

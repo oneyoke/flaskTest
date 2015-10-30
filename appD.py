@@ -6,7 +6,7 @@ from flask_wtf.csrf import CsrfProtect
 
 #RadioField
 from flask.ext.wtf import Form
-from wtforms import RadioField
+from wtforms import RadioField, SelectField
 from wtforms.validators import DataRequired
 
 #Unicode write
@@ -23,12 +23,14 @@ examples = [('lcd',u'Светодиодный дисплей'),
 
 exampleValues = [choice[0] for choice in examples]   
         
+examples2 = [('nonsel', u'Выбрать пример')] + examples   
 
 class ExampleSelectForm(Form):
     exampleSelect = RadioField('exampleSelect',
         choices=examples,
         default='lcd',
         validators=[DataRequired()])
+    exSel2 = SelectField('exampleSelect2', choices=examples2)
 
 app = Flask(__name__)
 
