@@ -6,7 +6,7 @@ from flask_wtf.csrf import CsrfProtect
 
 #RadioField
 from flask.ext.wtf import Form
-from wtforms import RadioField
+from wtforms import RadioField, SelectField
 from wtforms.validators import DataRequired
 
 #Unicode files
@@ -20,7 +20,9 @@ examples = [('lcd',u'Светодиодный дисплей'),
             ('stopwatch',u'Секундомер'),
             ('rgbled',u'Трехцветный диод')]
 
-exampleValues = [choice[0] for choice in examples]   
+exampleValues = [choice[0] for choice in examples]    
+        
+examples2 = [('nonsel', u'Выбрать пример')] + examples 
         
 
 class ExampleSelectForm(Form):
@@ -28,6 +30,7 @@ class ExampleSelectForm(Form):
         choices=examples,
         default='lcd',
         validators=[DataRequired()])
+    exSel2 = SelectField('exampleSelect2', choices=examples2)
 
 app = Flask(__name__)
 
@@ -68,16 +71,15 @@ def target_content_exchange():
             proc = Popen(['/home/pi/test/b_test.sh'], shell=True, stderr=None, stdout=None, stdin=None, close_fds=True)
             outDict['script'] = True
             return jsonify(outDict)
-	build = request.args.get('build')
-	if build != None:
-            outDict = {}
-            proc = Popen(['/home/pi/test/build.sh'], shell=True, stderr=None, stdout=None, stdin=None, close_fds=True)
-            outDict['build'] = True
-            return jsonify(outDict)
-
-
+    	build = request.args.get('build')
+    	if build != None:
+                outDict = {}
+                proc = Popen(['/home/pi/test/build.sh'], shell=True, stderr=None, stdout=None, stdin=None, close_fds=True)
+                outDict['build'] = True
+                return jsonify(outDict)
         outDict = {}
-        outDict['error'] = True    
+        outDict['error'] = True  
+        return jsonify(outDict)  
 
     elif 'POST' == request.method:
         if( not request.json ):

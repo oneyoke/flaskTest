@@ -73,7 +73,8 @@ def target_content_exchange():
             return jsonify(outDict)
 
         outDict = {}
-        outDict['error'] = True    
+        outDict['error'] = True 
+        return jsonify(outDict)   
 
     elif 'POST' == request.method:
         if( not request.json ):
