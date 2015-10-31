@@ -22,27 +22,37 @@
     <div style="min-width: 500px; min-height: 100pt; width:820px; margin: 0 auto; padding:0px; display: block; ">
     	
        <div class="content-box-header"><!--Начало блока "content-box-header"-->
-			<div class="panel-title"><!--Начало блока "tabs"-->
-        			<ul class="nav nav-tabs"><!--Начало блока "panel-title"-->
+			<div class="panel-title"><!--Начало блока "panel-title"-->
+        			<ul class="nav nav-tabs"><!--Начало блока  "tabs" -->
             		
-						<a href="#" class="button white" style="text-decoration: none" id="checkButton" title="Проверка кода"><img src="http://109.123.177.216/img/check.png" style="vertical-align:middle"></a>
+						<a href="#" class="button white" style="text-decoration: none" id="checkButton" title="Проверка кода"><img src="{{ url_for('static', filename='img/check.png') }}" style="vertical-align:middle"></a>
                 
-                    	<a href="#" class="button white" style="text-decoration: none" id="loadButton" title="Загрузка кода"><img src="http://109.123.177.216/img/arrow.png" style="vertical-align:middle"></a>
+                    	<a href="#" class="button white" style="text-decoration: none" id="loadButton" title="Загрузка кода"><img src="{{ url_for('static', filename='img/arrow.png') }}" style="vertical-align:middle"></a>
                     
-						<a href="#" class="button white" style="text-decoration: none" id="backlightButton" title="Подсветка"><img src="http://109.123.177.216/img/backlight.png" style="vertical-align:middle"></a>
+						<a href="#" class="button white" style="text-decoration: none" id="backlightButton" title="Подсветка"><img src="{{ url_for('static', filename='img/check.png') }}" style="vertical-align:middle"></a>
                 
-                    	<a href="#" class="button white" style="text-decoration: none" id="laserButton" title="Лазер"><img src="http://109.123.177.216/img/laser.png" style="vertical-align:middle"></a>
+                    	<a href="#" class="button white" style="text-decoration: none" id="laserButton" title="Лазер"><img src="{{ url_for('static', filename='img/check.png') }}" style="vertical-align:middle"></a>
                     
-                		<a href="#" class="button white" style="text-decoration: none" id="retrieveButton" title="Считать"><img src="http://109.123.177.216/img/upload.png" style="vertical-align:middle"></a>
+                		<a href="#" class="button white" style="text-decoration: none" id="retrieveButton" title="Считать"><img src="{{ url_for('static', filename='img/upload.png') }}" style="vertical-align:middle"></a>
                 
-                    	<a href="#" class="button white" style="text-decoration: none" id="submitButton" title="Загрузить"><img src="http://109.123.177.216/img/download.png" style="vertical-align:middle"></a>
+                    	<a href="#" class="button white" style="text-decoration: none" id="submitButton" title="Загрузить"><img src="{{ url_for('static', filename='img/download.png') }}" style="vertical-align:middle"></a>
+                              
+			 {{ exampleSelect.exSel2(class_="styled-select green rounded") }}
+            	
+				</ul><!--Конец блока "tabs"-->
 
-                        {{ exampleSelect.exSel2 }}
-            		</ul><!--Конец блока "tabs"-->
-				</div><!--Конец блока "panel-title"-->
-                
+			</div><!--Конец блока "panel-title"-->
+                    
+
+            	
+            	
+		
+			 	                          
+                         
+                         
+
     	</div><!--Конец блока "content-box-header"-->
-            
+                    
        <div class="content-box"><!--Начало блока "content-box"-->
        
 			<div  style=" width:500px; float:left;"><!--Начало объединяющего блока-->
