@@ -44,18 +44,21 @@ def target_content_exchange():
     #exampleSelect = ExampleSelectForm()
     #import pdb; pdb.set_trace()
     if 'GET' == request.method:
-        radio = request.args.get('radio')
-        if radio != None: 
-            f = None
-            outDict = {}
-            radio = request.args.get('radio')
-            if radio in exampleValues:
-                print(radio+' was found')
-                exampleFilePath = radio+'.ino'
+        button = request.args.get('button')
+        outDict = {}
+        
+        if button == None:
+            outDict['result']=False
+            return jsonify(outDict)
+
+        if button == 'retrieve':
+            example = request.args.get('example','lcd')
+            if example in exampleValues:
+                print(example+' was found')
+                exampleFilePath = example+'.ino'
             else:
                 print('radio value was not found')
                 exampleFilePath = 'lcd.ino'
-            
             try:
                 f = codecs.open('examples/'+exampleFilePath, 'r+','utf-8')
                 outDict['content'] = f.read()
@@ -65,21 +68,19 @@ def target_content_exchange():
                 outDict['exists'] = False
             finally:
                 return jsonify(outDict)
-        script = request.args.get('script')        
-        if script != None:
-            outDict = {}
+                
+        if button == 'check':
             proc = Popen(['/home/pi/test/b_test.sh'], shell=True, stderr=None, stdout=None, stdin=None, close_fds=True)
-            outDict['script'] = True
+            outDict['result'] = True
+            return jsonify(outDict)          
+
+        if button == 'load':
+            proc = Popen(['/home/pi/test/build.sh'], shell=True, stderr=None, stdout=None, stdin=None, close_fds=True)
+            outDict['result'] = True
             return jsonify(outDict)
-    	build = request.args.get('build')
-    	if build != None:
-                outDict = {}
-                proc = Popen(['/home/pi/test/build.sh'], shell=True, stderr=None, stdout=None, stdin=None, close_fds=True)
-                outDict['build'] = True
-                return jsonify(outDict)
-        outDict = {}
-        outDict['error'] = True  
-        return jsonify(outDict)  
+
+        outDict['result']=False    
+        return jsonify(outDict)
 
     elif 'POST' == request.method:
         if( not request.json ):
