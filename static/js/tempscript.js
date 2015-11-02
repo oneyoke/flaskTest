@@ -148,5 +148,9 @@ window.addEvent('domready', function() {
             e.stop();
             commandRequest.send('button=laser');
         });
+        $('exSel2').addEvent('change', function(e){
+            e.stop();
+            fetchingRequest.send('button=retrieve&example='+this.getSelected().get('value')[0]);
+        });
 
     });
