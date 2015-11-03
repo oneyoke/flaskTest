@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from flask import Flask, render_template, request, abort, jsonify
+from flask import Flask, render_template, request, abort, jsonify, url_for
 from flask_wtf.csrf import CsrfProtect
 
 #RadioField
@@ -13,6 +13,52 @@ from wtforms.validators import DataRequired
 import codecs
 
 from subprocess import Popen
+import subprocess
+
+from celery import Celery
+
+app = Flask(__name__)
+
+# Celery configuration
+app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
+app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+
+# Initialize Celery
+celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+celery.conf.update(app.config)
+
+@celery.task(bind=True)
+def compile_task(self):
+    self.update_state(state='PROGRESS',
+                          meta={'current': 0, 'total': 1,
+                                'status': 'message'})
+    process = subprocess.Popen(['/home/pi/test/only_build.sh'],
+                                shell=True,
+                                stderr=subprocess.STDOUT,
+                                stdout=subprocess.PIPE,
+                                stdin=None,
+                                close_fds=True)
+    output = process.communicate()[0] 
+
+    return {'current': 100, 'total': 100, 'status': 'Task completed!',
+            'result': 42, 'output': output}
+
+@celery.task(bind=True)
+def upload_task(self):
+    self.update_state(state='PROGRESS',
+                          meta={'current': 0, 'total': 1,
+                                'status': 'message'})
+    process = subprocess.Popen(['/home/pi/test/only_upload.sh'],
+                                shell=True,
+                                stderr=subprocess.STDOUT,
+                                stdout=subprocess.PIPE,
+                                stdin=None,
+                                close_fds=True)
+    output = process.communicate()[0] 
+
+    return {'current': 100, 'total': 100, 'status': 'Task completed!',
+            'result': 42, 'output': output}
+
 
 examples = [('lcd',u'Светодиодный дисплей'),
             ('weather',u'Погодная станция'),
@@ -32,7 +78,6 @@ class ExampleSelectForm(Form):
         validators=[DataRequired()])
     exSel2 = SelectField('exampleSelect2', choices=examples2)
 
-app = Flask(__name__)
 
 CsrfProtect(app)
 app.debug = False                    # TODO: change this to False on real server
@@ -69,15 +114,20 @@ def target_content_exchange():
             finally:
                 return jsonify(outDict)
                 
-        if button == 'check':
-            proc = Popen(['/home/pi/test/b_test.sh'], shell=True, stderr=None, stdout=None, stdin=None, close_fds=True)
-            outDict['result'] = True
-            return jsonify(outDict)          
+        # if button == 'check':
+        #     #proc = Popen(['/home/pi/test/b_test.sh'], shell=True, stderr=None, stdout=None, stdin=None, close_fds=True)
+        #     outDict['result'] = True
+        #     task = long_task.apply_async()
+        #     #url_for('taskstatus', task_id=task.id)
+        #     return jsonify(outDict), 202, {'Location': url_for('taskstatus', task_id=task.id)}
+        #     #return jsonify(outDict)          
 
         if button == 'load':
-            proc = Popen(['/home/pi/test/build.sh'], shell=True, stderr=None, stdout=None, stdin=None, close_fds=True)
-            outDict['result'] = True
-            return jsonify(outDict)
+            task = upload_task.apply_async()
+            return jsonify({'result': 'updated'}), 202, {'Location': url_for('taskstatusUpload', task_id=task.id)}
+            #proc = Popen(['/home/pi/test/build.sh'], shell=True, stderr=None, stdout=None, stdin=None, close_fds=True)
+            #outDict['result'] = True
+            #return jsonify(outDict)
 
         outDict['result']=False    
         return jsonify(outDict)
@@ -98,13 +148,74 @@ def target_content_exchange():
             f = codecs.open(targetFilePath, 'w+','utf-8')
             f.write( request.json['content'] )
             f.close()
-            return jsonify({'result': 'updated'})
+            task = compile_task.apply_async()
+            return jsonify({'result': 'updated'}), 202, {'Location': url_for('taskstatus', task_id=task.id)}
 
 @app.route('/', methods=['GET'])
 def index_view():
     exampleSelect = ExampleSelectForm()
     return render_template('index.html',
                             exampleSelect=exampleSelect)
+
+@app.route('/status/<task_id>')
+def taskstatus(task_id):
+    task = compile_task.AsyncResult(task_id)
+    if task.state == 'PENDING':
+        response = {
+            'state': task.state,
+            'current': 0,
+            'total': 1,
+            'status': 'Pending...'
+        }
+    elif task.state != 'FAILURE':
+        response = {
+            'state': task.state,
+            'current': task.info.get('current', 0),
+            'total': task.info.get('total', 1),
+            'status': task.info.get('status', '')
+        }
+        if 'result' in task.info:
+            response['result'] = task.info['result']
+            response['output'] = task.info['output']
+    else:
+        # something went wrong in the background job
+        response = {
+            'state': task.state,
+            'current': 1,
+            'total': 1,
+            'status': str(task.info),  # this is the exception raised
+        }
+    return jsonify(response)    
+
+@app.route('/statusUpload/<task_id>')
+def taskstatusUpload(task_id):
+    task = upload_task.AsyncResult(task_id)
+    if task.state == 'PENDING':
+        response = {
+            'state': task.state,
+            'current': 0,
+            'total': 1,
+            'status': 'Pending...'
+        }
+    elif task.state != 'FAILURE':
+        response = {
+            'state': task.state,
+            'current': task.info.get('current', 0),
+            'total': task.info.get('total', 1),
+            'status': task.info.get('status', '')
+        }
+        if 'result' in task.info:
+            response['result'] = task.info['result']
+            response['output'] = task.info['output']
+    else:
+        # something went wrong in the background job
+        response = {
+            'state': task.state,
+            'current': 1,
+            'total': 1,
+            'status': str(task.info),  # this is the exception raised
+        }
+    return jsonify(response) 
 
 if __name__ == '__main__':
     #app.run(host="0.0.0.0",port=5002,debug=True)
