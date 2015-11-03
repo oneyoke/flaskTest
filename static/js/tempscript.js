@@ -30,7 +30,8 @@ window.addEvent('domready', function() {
     editor.getSession().setMode(new CppMode());
     editor.$blockScrolling = Infinity;
     editor.setOptions({
-        maxLines: 20,
+        maxLines: 29,
+        minLines: 29,
         readOnly: true  // will be unset, when AJAX fetching request is done.
     });
     // TODO: XXX
@@ -75,6 +76,11 @@ window.addEvent('domready', function() {
                 $('submitButton').addClass('disabled');
                 $('retrieveButton').addClass('disabled');
             },
+            onSuccess : function(responseJSON, responseText) {
+                //status_url = request.getResponseHeader('Location');
+                status_url = this.getHeader('Location');
+                update_progress(status_url);
+            },
             onComplete : function(rqd) {
                 if( rqd &&
                     rqd.hasOwnProperty('result') &&
@@ -93,13 +99,18 @@ window.addEvent('domready', function() {
         }),
         commandRequest = new Request.JSON({
             url: $SCRIPT_ROOT+"/target_content_exchange",
-            method : 'GET',
+            method : 'POST',
             urlEncoded : false,
             //buttonChecked: $('exampleSelect-1').checked,
             onRequest : function() {
                 //editor.setReadOnly(true);
                 //$('submitButton').addClass('disabled');
                 //$('retrieveButton').addClass('disabled');
+            },
+            onSuccess : function(responseJSON, responseText) {
+                //status_url = request.getResponseHeader('Location');
+                status_url = this.getHeader('Location');
+                update_progress(status_url);
             },
             onComplete : function(rqd) {
                 if( rqd &&
@@ -122,6 +133,54 @@ window.addEvent('domready', function() {
                      },
         });
 
+        function update_progress(status_url) {
+            // send GET request to status URL
+            var updateRequest = new Request.JSON({
+            url: status_url,
+            method : 'GET',
+            urlEncoded : false,
+            //buttonChecked: $('exampleSelect-1').checked,
+            onRequest : function() {
+                //editor.setReadOnly(true);
+                //$('submitButton').addClass('disabled');
+                //$('retrieveButton').addClass('disabled');
+            },
+            onComplete : function(rqd) {
+                if (rqd) {
+                    // a = 5;
+                    // percent = parseInt(rqd.current * 100 / rqd.total);
+                    // nanobar.go(percent);
+                    // status_div.childNodes[2].set('text',percent + '%');
+                    // status_div.childNodes[3].set('text',rqd.status)
+                    if (rqd.state != 'PENDING' && rqd.state != 'PROGRESS') {
+                        if (rqd.hasOwnProperty('result')) {
+                            // show result
+                            //$(status_div.childNodes[3]).text('Result: ' + data['result']);
+                            // status_div.childNodes[4].set('text', 'Result: ' + rqd.result);
+                            $('progress').grab(new Element('div', {'text' : rqd.output}))
+                        }
+                        else {
+                            // something unexpected happened
+                            //$(status_div.childNodes[3]).text('Result: ' + data['state']);
+                            //status_div.childNodes[4].set('text', 'Result: ' + rqd.state);
+                        }
+                    }
+                    else {
+                        // rerun in 2 seconds
+                        setTimeout(function() {
+                            update_progress(status_url);
+                        }, 2000);
+                    }
+                    
+                }
+            },
+            headers : { "X-CSRFToken": $CSRF_TOKEN,
+                        'Content-type' : 'application/json',
+                     },
+            });
+            updateRequest.send();
+        };
+
         fetchingRequest.send('button=retrieve&example=lcd');
         $('submitButton').addEvent('click', function(e){
             e.stop();
@@ -134,7 +193,8 @@ window.addEvent('domready', function() {
         });
         $('checkButton').addEvent('click', function(e){
             e.stop();
-            commandRequest.send('button=check');
+            commitingRequest.data
+            commitingRequest.send(JSON.encode({'content' : editor.getSession().getValue()}));
         });
         $('loadButton').addEvent('click', function(e){
             e.stop();
