@@ -99,7 +99,7 @@ window.addEvent('domready', function() {
         }),
         commandRequest = new Request.JSON({
             url: $SCRIPT_ROOT+"/target_content_exchange",
-            method : 'POST',
+            method : 'GET',
             urlEncoded : false,
             //buttonChecked: $('exampleSelect-1').checked,
             onRequest : function() {
@@ -182,15 +182,15 @@ window.addEvent('domready', function() {
         };
 
         fetchingRequest.send('button=retrieve&example=lcd');
-        $('submitButton').addEvent('click', function(e){
-            e.stop();
-            commitingRequest.data
-            commitingRequest.post(JSON.encode({'content' : editor.getSession().getValue()}));
-        });
-        $('retrieveButton').addEvent('click', function(e){
-            e.stop();
-            fetchingRequest.send('button=retrieve&example='+$$('select[name=exSel2]').getSelected()[0].get('value')[0]);
-        });
+        // $('submitButton').addEvent('click', function(e){
+        //     e.stop();
+        //     commitingRequest.data
+        //     commitingRequest.post(JSON.encode({'content' : editor.getSession().getValue()}));
+        // });
+        // $('retrieveButton').addEvent('click', function(e){
+        //     e.stop();
+        //     fetchingRequest.send('button=retrieve&example='+$$('select[name=exSel2]').getSelected()[0].get('value')[0]);
+        // });
         $('checkButton').addEvent('click', function(e){
             e.stop();
             commitingRequest.data
