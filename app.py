@@ -17,6 +17,8 @@ import subprocess
 
 from celery import Celery
 
+import uuid
+
 app = Flask(__name__)
 
 # Celery configuration
@@ -28,12 +30,13 @@ celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
 
 @celery.task(bind=True)
-def compile_task(self):
+def compile_task(self,user_id):
     self.update_state(state='PROGRESS',
                           meta={'current': 0, 'total': 1,
                                 'status': 'message'})
-    process = subprocess.Popen(['/home/pi/test/only_build.sh'],
-                                shell=True,
+    print(user_id)
+    process = subprocess.Popen(['/home/pi/test/only_build.sh',user_id],
+                                shell=False,
                                 stderr=subprocess.STDOUT,
                                 stdout=subprocess.PIPE,
                                 stdin=None,
@@ -44,12 +47,13 @@ def compile_task(self):
             'result': 42, 'output': output}
 
 @celery.task(bind=True)
-def upload_task(self):
+def upload_task(self,user_id):
+    print(user_id)
     self.update_state(state='PROGRESS',
                           meta={'current': 0, 'total': 1,
                                 'status': 'message'})
-    process = subprocess.Popen(['/home/pi/test/only_upload.sh'],
-                                shell=True,
+    process = subprocess.Popen(['/home/pi/test/only_upload.sh',user_id],
+                                shell=False,
                                 stderr=subprocess.STDOUT,
                                 stdout=subprocess.PIPE,
                                 stdin=None,
@@ -123,7 +127,8 @@ def target_content_exchange():
         #     #return jsonify(outDict)          
 
         if button == 'load':
-            task = upload_task.apply_async()
+            user_id = request.args.get('user_id')
+            task = upload_task.apply_async([user_id])
             return jsonify({'result': 'updated'}), 202, {'Location': url_for('taskstatusUpload', task_id=task.id)}
             #proc = Popen(['/home/pi/test/build.sh'], shell=True, stderr=None, stdout=None, stdin=None, close_fds=True)
             #outDict['result'] = True
@@ -145,17 +150,21 @@ def target_content_exchange():
             # doesn't like to wait too much.
             
             # Write data in Unicode
-            f = codecs.open(targetFilePath, 'w+','utf-8')
+            #f = codecs.open(targetFilePath, 'w+','utf-8')
+            user_id = request.json['user_id']
+            f = codecs.open('userino/'+user_id+'.ino', 'w+','utf-8')
             f.write( request.json['content'] )
             f.close()
-            task = compile_task.apply_async()
+           
+            task = compile_task.apply_async([user_id])
             return jsonify({'result': 'updated'}), 202, {'Location': url_for('taskstatus', task_id=task.id)}
 
 @app.route('/', methods=['GET'])
 def index_view():
     exampleSelect = ExampleSelectForm()
     return render_template('index.html',
-                            exampleSelect=exampleSelect)
+                            exampleSelect=exampleSelect,
+                            user_id = uuid.uuid4())
 
 @app.route('/status/<task_id>')
 def taskstatus(task_id):

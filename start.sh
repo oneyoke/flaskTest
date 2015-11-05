@@ -3,7 +3,7 @@ cd /home/pi/test/
 #python /home/pi/test/app.py
 #su pi -c 'bash /home/pi/test/run-redis.sh' &
 /home/pi/test/run-redis.sh &
-celery worker -A app.celery &
+celery worker -A app.celery --concurrency 1 &
 python /home/pi/test/app.py &
 #su pi -c 'python /home/pi/test/app.py' &
 #su pi -c 'celery worker -A app.celery' &

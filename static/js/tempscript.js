@@ -194,11 +194,12 @@ window.addEvent('domready', function() {
         $('checkButton').addEvent('click', function(e){
             e.stop();
             commitingRequest.data
-            commitingRequest.send(JSON.encode({'content' : editor.getSession().getValue()}));
+            commitingRequest.send(JSON.encode({'content' : editor.getSession().getValue(),
+                                                'user_id': $USER_ID}));
         });
         $('loadButton').addEvent('click', function(e){
             e.stop();
-            commandRequest.send('button=load');
+            commandRequest.send('button=load&user_id='+$USER_ID);
         });
         $('backlightButton').addEvent('click', function(e){
             e.stop();
