@@ -8,8 +8,10 @@
     <script src="{{ url_for('static', filename='lib/contrib/ace/ace.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/contrib/ace/mode-c_cpp.js') }}"></script>
     <link href="/static/css/tempstyle.css" rel="stylesheet" media="screen">
+    <link href="/static/css/videostyle.css" rel="stylesheet" media="screen">
     <!-- <script src="{{ url_for('static', filename='lib/contrib/ace/theme-monkai.js') }}"></script> -->
     <script src="{{ url_for('static', filename='js/tempscript.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/videoscript.js') }}"></script>
     <script type=text/javascript>
       $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
       $CSRF_TOKEN = "{{ csrf_token() }}";
@@ -20,7 +22,7 @@
 <body>
 
 
-    <div style="min-width: 500px; min-height: 100pt; width:820px; margin: 0 auto; padding:0px; display: block; ">
+    <div style="min-width: 500px; min-height: 100pt; width:800px; margin: 0 auto; padding:0px; display: block; ">
     	
        <div class="content-box-header"><!--Начало блока "content-box-header"-->
 			<div class="panel-title"><!--Начало блока "panel-title"-->
@@ -30,11 +32,11 @@
                 
                     	<a href="#" class="button white" style="text-decoration: none" id="loadButton" title="Загрузка кода"><img src="{{ url_for('static', filename='img/arrow.png') }}" style="vertical-align:middle"></a>
                     
-						<a href="#" class="button white" style="text-decoration: none" id="backlightButton" title="Подсветка"><img src="{{ url_for('static', filename='img/check.png') }}" style="vertical-align:middle"></a>
+						<a href="#" class="button white" style="text-decoration: none" id="backlightButton" title="Подсветка"><img src="{{ url_for('static', filename='img/bulb.png') }}" style="vertical-align:middle"></a>
                 
-                    	<a href="#" class="button white" style="text-decoration: none" id="laserButton" title="Лазер"><img src="{{ url_for('static', filename='img/check.png') }}" style="vertical-align:middle"></a>
+                    	<a href="#" class="button white" style="text-decoration: none" id="laserButton" title="Лазер"><img src="{{ url_for('static', filename='img/laser.jpg') }}" style="vertical-align:middle"></a>
                     
-                		<a href="#" class="button white" style="text-decoration: none" id="retrieveButton" title="Считать"><img src="{{ url_for('static', filename='img/upload.png') }}" style="vertical-align:middle"></a>
+                		<a href="#" class="button white" style="text-decoration: none" id="retrieveButton" title="Считать"><img src="{{ url_for('static', filename='img/upload.png') }}" style="vertical-align:middle"></a>     
                 
                     	<a href="#" class="button white" style="text-decoration: none" id="submitButton" title="Загрузить"><img src="{{ url_for('static', filename='img/download.png') }}" style="vertical-align:middle"></a>
                               
@@ -56,23 +58,64 @@
                     
        <div class="content-box"><!--Начало блока "content-box"-->
        
-			<div  style=" width:500px; float:left;"><!--Начало объединяющего блока-->
-      		
-    			
+			<div  style=" width:500px; height: 460px; float:left;"><!--Начало объединяющего блока-->
+
 				<div><!--Начало блока "editor"-->
-					<div class="editor" id="editor"></div>
+
+	<video id="my-video" class="video-js" controls autoplay="autoplay">                                   
+	  <source src="http://109.123.138.152:8080/ogg" type="video/ogg">                                     
+		 <p class="vjs-no-js">                                                                        
+		 To view this video please enable JavaScript, and consider upgrading to a web browser that    
+		 <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>   
+		 </p>                                                                                         
+	</video>                                                                                              
+
+
+
+
+
+
+					<div class="editor" id="editor">
+
+  
+  
+</div>
         
 						<ul id="errorsList"></ul>
-       	                           
-				</div><!--Конец блока "editor"-->
+ 	
+    	
+    	
+      
+      
+      
+   	
+ 	
+	<!--	</div><!--Конец блока "video"-->                                                                   	
+
+
+
+
+
+
+
+
+                      		</div><!--Конец блока "editor"-->
+
+
 			</div><!--Конец объединяющего блока -->
+			
+	<!--	<div class="video"><!--Начало блока "video" -->                                                    			         
+			                                                                                           	
 
+  			
+  			
+	  			
+ 	  			
+     			
+  			
+  				
 
-				<div class="video"><!--Начало блока "video"-->
-					<video width="300" height="400" controls autoplay">
-						<source src="http://109.123.138.152:8080/ogg" type="video/ogg">
-					</video>
-				</div><!--Конец блока "video"-->
+	
 
 		</div><!--Конец блока "content-box"-->
 

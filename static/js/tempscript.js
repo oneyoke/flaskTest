@@ -30,8 +30,8 @@ window.addEvent('domready', function() {
     editor.getSession().setMode(new CppMode());
     editor.$blockScrolling = Infinity;
     editor.setOptions({
-        maxLines: 29,
-        minLines: 29,
+        maxLines: 32,
+        minLines: 32,
         readOnly: true  // will be unset, when AJAX fetching request is done.
     });
     // TODO: XXX

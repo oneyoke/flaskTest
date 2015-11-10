@@ -41,9 +41,12 @@ a.button.disabled {
 .video {
 	outline:solid 1px #CC2C2F;
 	padding:0px;
-	margin-left:400px;
+	position: relative;
 	margin-right:5px;
+	margin-left:405px;
 	margin-top:5px;
+	width: 360px; 
+        height: 200px;
 }
 
 a.button.disabled:hover {
@@ -212,7 +215,10 @@ ul {
 	border:solid 1px #EEEEEE;
 	background-color:#EEEEEE;
 	border-radius: 6px;
-	margin: 4px;
+	margin-top: -224px;
+	margin-right: 4px;
+	margin-bottom: 4px;
+	margin-left: 4px;  
 }
 
 /*Select Box example http://codepen.io/ericrasch/pen/zjDBx */
