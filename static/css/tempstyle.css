@@ -258,3 +258,8 @@ ul {
 
 
 /*End of Select Box example */
+
+#progress{
+
+outline:solid 1px #FFF;
+}

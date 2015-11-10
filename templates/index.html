@@ -36,9 +36,9 @@
                 
                     	<a href="#" class="button white" style="text-decoration: none" id="laserButton" title="Лазер"><img src="{{ url_for('static', filename='img/laser.jpg') }}" style="vertical-align:middle"></a>
                     
-<!--                 		<a href="#" class="button white" style="text-decoration: none" id="retrieveButton" title="Считать"><img src="{{ url_for('static', filename='img/upload.png') }}" style="vertical-align:middle"></a>     
+<!--                 		<a href="#" class="button white" style="text-decoration: none" id="retrieveButton" title="Скачать программу"><img src="{{ url_for('static', filename='img/upload.png') }}" style="vertical-align:middle"></a>     
                 
-                    	<a href="#" class="button white" style="text-decoration: none" id="submitButton" title="Загрузить"><img src="{{ url_for('static', filename='img/download.png') }}" style="vertical-align:middle"></a> -->
+                    	<a href="#" class="button white" style="text-decoration: none" id="submitButton" title="Загрузить программу"><img src="{{ url_for('static', filename='img/download.png') }}" style="vertical-align:middle"></a> -->
                               
 			 {{ exampleSelect.exSel2(class_="styled-select green rounded") }}
             	
@@ -62,7 +62,7 @@
 
 				<div><!--Начало блока "editor"-->
 
-	<video id="my-video" class="video-js" controls autoplay="autoplay">                                   
+	<video id="my-video" class="video-js" controls autoplay>                                   
 	  <source src="http://109.123.138.152:8080/ogg" type="video/ogg">                                     
 		 <p class="vjs-no-js">                                                                        
 		 To view this video please enable JavaScript, and consider upgrading to a web browser that    
@@ -70,53 +70,15 @@
 		 </p>                                                                                         
 	</video>                                                                                              
 
-
-
-
-
-
-					<div class="editor" id="editor">
-
-  
-  
-</div>
+					<div class="editor" id="editor"></div>
         
 						<ul id="errorsList"></ul>
  	
-    	
-    	
-      
-      
-      
-   	
- 	
-	<!--	</div><!--Конец блока "video"-->                                                                   	
-
-
-
-
-
-
-
-
                       		</div><!--Конец блока "editor"-->
 
 
 			</div><!--Конец объединяющего блока -->
-			
-	<!--	<div class="video"><!--Начало блока "video" -->                                                    			         
-			                                                                                           	
-
-  			
-  			
-	  			
- 	  			
-     			
-  			
-  				
-
-	
-
+		                                                   			     
 		</div><!--Конец блока "content-box"-->
 
 	</div>

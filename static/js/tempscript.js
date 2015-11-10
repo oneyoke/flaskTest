@@ -110,7 +110,11 @@ window.addEvent('domready', function() {
             onSuccess : function(responseJSON, responseText) {
                 //status_url = request.getResponseHeader('Location');
                 status_url = this.getHeader('Location');
-                update_progress(status_url);
+                //If Location was provided for update_progress request
+                if (status_url) {
+                    update_progress(status_url);
+                }
+                
             },
             onComplete : function(rqd) {
                 if( rqd &&
