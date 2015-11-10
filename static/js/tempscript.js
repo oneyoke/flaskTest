@@ -43,8 +43,8 @@ window.addEvent('domready', function() {
             //buttonChecked: $('exampleSelect-1').checked,
             onRequest : function() {
                 editor.setReadOnly(true);
-                $('submitButton').addClass('disabled');
-                $('retrieveButton').addClass('disabled');
+                //$('submitButton').addClass('disabled');
+                //$('retrieveButton').addClass('disabled');
             },
             onComplete : function(rqd) {
                 if( rqd &&
@@ -59,8 +59,8 @@ window.addEvent('domready', function() {
                     // TODO: detailed error description can be provided here this way:
                     $('errorsList').grab( new Element('li', {'text' : 'Got an IO server error.'}) );
                 }
-                $('submitButton').removeClass('disabled');
-                $('retrieveButton').removeClass('disabled');
+                //$('submitButton').removeClass('disabled');
+                //$('retrieveButton').removeClass('disabled');
             },
             headers : { "X-CSRFToken": $CSRF_TOKEN,
                         'Content-type' : 'application/json',
@@ -73,8 +73,8 @@ window.addEvent('domready', function() {
             urlEncoded : false,
             onRequest : function() {
                 editor.setReadOnly(true);
-                $('submitButton').addClass('disabled');
-                $('retrieveButton').addClass('disabled');
+                //$('submitButton').addClass('disabled');
+                //$('retrieveButton').addClass('disabled');
             },
             onSuccess : function(responseJSON, responseText) {
                 //status_url = request.getResponseHeader('Location');
@@ -87,7 +87,7 @@ window.addEvent('domready', function() {
                     rqd.result == 'updated' /*&&
                     rqd.hasOwnProperty('digest')*/ ) {
                     editor.setReadOnly(false);
-                    $('submitButton').removeClass('disabled');
+                    //$('submitButton').removeClass('disabled');
                 } else {
                     // TODO: detailed error description can be provided here this way:
                     $('errorsList').grab( new Element('li', {'text' : 'Got a server error.'}) );
