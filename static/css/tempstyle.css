@@ -37,18 +37,6 @@ a.button.disabled {
 	border: solid 1px #aaa;
 	cursor: default;
 }
-
-.video {
-	outline:solid 1px #CC2C2F;
-	padding:0px;
-	position: relative;
-	margin-right:5px;
-	margin-left:405px;
-	margin-top:5px;
-	width: 360px; 
-        height: 200px;
-}
-
 a.button.disabled:hover {
 	text-decoration: none;
 }
@@ -259,7 +247,14 @@ ul {
 
 /*End of Select Box example */
 
-#progress{
+.progress{
 
-outline:solid 1px #FFF;
+outline:solid 1px #7D00B9;
+width: 390px;
+height: 90px;
+overflow: auto;
+background-color: #000;
+font-family: "Courier New", Courier, monospace;
+color: #00FF00;
+ 
 }

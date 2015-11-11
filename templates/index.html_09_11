@@ -8,7 +8,7 @@
     <script src="{{ url_for('static', filename='lib/contrib/ace/ace.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/contrib/ace/mode-c_cpp.js') }}"></script>
     <link href="/static/css/tempstyle.css" rel="stylesheet" media="screen">
-    <link href="/static/css/videostyle.css" rel="stylesheet" media="screen">
+    <link href="/static/css/videostyle.css" rel="stylesheet" media="screen">   
     <!-- <script src="{{ url_for('static', filename='lib/contrib/ace/theme-monkai.js') }}"></script> -->
     <script src="{{ url_for('static', filename='js/tempscript.js') }}"></script>
     <script src="{{ url_for('static', filename='js/videoscript.js') }}"></script>
