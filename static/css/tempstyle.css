@@ -224,6 +224,7 @@ ul {
    text-align: center;
    color:#095C31;
    font-weight: normal;
+
 }
 
 /* -------------------- Rounded Corners */
@@ -248,13 +249,51 @@ ul {
 /*End of Select Box example */
 
 .progress{
-
-outline:solid 1px #7D00B9;
+/*outline:solid 1px #7D00B9;*/
 width: 390px;
 height: 90px;
-overflow: auto;
+max-height: 90px;
+overflow-x: auto;
+overflow-y: auto;
 background-color: #000;
 font-family: "Courier New", Courier, monospace;
 color: #00FF00;
- 
+border:solid 1px #FFFFFF;
+border-radius:4px;
+margin-top: -230px;     
+margin-right:4px;    
+margin-bottom:4px;   
+margin-left: 400px;
+font-size:12px;
+  
+}
+.progress::-webkit-scrollbar{
+    width:10px;
+  
+}
+.progress::-webkit-scrollbar{ 
+    height:10px;               
+                              
+}                             
+
+.progress::-webkit-scrollbar-thumb{
+    border-width:1px 1px 1px 2px;
+    border-color: #777;
+    background-color: #4A4A4A;
+}
+.progress::-webkit-scrollbar-thumb:hover{
+    border-width: 1px 1px 1px 2px;
+    border-color: #555;
+    background-color: #777;
+}
+.progress::-webkit-scrollbar-track{
+    border-width:0;
+}
+.progress::-webkit-scrollbar-track:hover{
+   /* border-left: solid 1px #aaa;*/
+    background-color: #000;
+}
+.progress::-webkit-scrollbar-corner{
+ background-color: #000;
+}
 }

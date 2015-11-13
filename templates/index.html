@@ -16,6 +16,7 @@
       $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
       $CSRF_TOKEN = "{{ csrf_token() }}";
       $USER_ID = "{{ user_id }}";
+      
     </script>
 
 </head>
@@ -72,20 +73,20 @@
 		 <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>   
 		 </p>                                                                                         
 	</video>                                                                                              
-
+	  
 					<div class="editor" id="editor"></div>
-        
-						<ul id="errorsList"></ul>
- 	
+                                          
+			
+ 	                          
                       		</div><!--Конец блока "editor"-->
-
-
-			</div><!--Конец объединяющего блока -->
+                      	<div id="progress" class="progress"></div> 	
+                      		
+			</div> <!--Конец объединяющего блока -->
 		                                                   			     
 		</div><!--Конец блока "content-box"-->
 
 	</div>
 
-<div id="progress" class="progress"></div>
 
+			<ul id="errorsList"></ul>  
 </body></html>
