@@ -164,7 +164,9 @@ window.addEvent('domready', function() {
                             // show result
                             //$(status_div.childNodes[3]).text('Result: ' + data['result']);
                             // status_div.childNodes[4].set('text', 'Result: ' + rqd.result);
-                            $('progress').grab(new Element('div', {'text' : rqd.output}))
+                            var objDiv = $('progress')
+                            objDiv.grab(new Element('div', {'text' : rqd.output}))
+                            objDiv.scrollTop = objDiv.scrollHeight
                         }
                         else {
                             // something unexpected happened
