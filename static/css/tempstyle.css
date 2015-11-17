@@ -111,9 +111,9 @@ a.button.bigrounded {
 }
 .panel-title {
 	height: 30px;
-	width: 500px;
+	width: auto;
 	font-size: 10px;
-	margin-left: 30px;
+	margin-left: -3px;
 }
 .tabs {
 	height: 30px;
@@ -153,7 +153,7 @@ ul {
 	width: auto;
 	background-color: #00A651;
 	border-radius: 6px;
-	background-image: url(http://109.123.177.216/img/logo.png);
+	/*background-image: url(http://109.123.177.216/img/logo.png);*/
 	background-repeat: no-repeat;
 	background-position:10px center;
 }
@@ -168,7 +168,7 @@ ul {
 	padding-top: 6px;
 	padding-right: 5px;
 	padding-bottom: 6px;
-	padding-left: 10px;
+	padding-left: 5px;
 }
 #tab{
 	height:30;
@@ -239,7 +239,8 @@ ul {
     background-color:  #7FD2A7;
 }
 
-
+                              
+  
 .styled-select:focus {
     color: #095C31; 
     background-color: #7FD2A7;
@@ -296,4 +297,83 @@ font-size:12px;
 .progress::-webkit-scrollbar-corner{
  background-color: #000;
 }
+
+
+
+
+ul.dropdown li {
+	position: relative;
+    	
 }
+ ul.dropdown,
+ ul.dropdown-inside {
+ list-style-type: none;
+ padding: 0;
+ }
+ ul.dropdown-inside {
+	position: absolute;
+	left: -9999px;
+ }
+ ul.dropdown li.dropdown-top {
+	display: inline;
+	float: left;
+	margin-top: 0;
+	margin-right: 0px;
+	margin-bottom: 0;
+	margin-left: 0;
+	padding: 0px;
+	position: relative;
+z-index:10000;    	   	
+ }
+ ul.dropdown li.dropdown-top a {
+	display: block;
+	color:#0B5E33;
+	text-decoration: none;
+
+padding-left: 4px;
+	padding-top: 2px;
+	padding-right: 4px;
+	padding-bottom: 2px;
+font-size: 16px;
+
+	position: relative;
+z-index:10000;    	   
+ }
+ ul.dropdown a.dropdown-top { 
+ background: #00A651;
+
+ 
+  }
+ ul.dropdown a.dropdown-top:hover {
+padding-left: 4px;
+	padding-top: 2px;
+	padding-right: 4px;
+	padding-bottom: 2px;	
+
+
+
+  	   }
+ ul.dropdown li.dropdown-top:hover .dropdown-inside {
+ display: block;
+ left: 0;
+
+ }
+ ul.dropdown .dropdown-inside {
+	background: #7FD2A7;
+	   	   
+ }
+ ul.dropdown .dropdown-inside a:hover {
+	background: #00A651;
+	color:#ffffff;
+	padding-left: 4px;
+	padding-top: 2px;
+	padding-right: 4px;
+	padding-bottom: 2px; 
+	  	   	
+ }
+
+#fullscreen{
+float:right;
+}
+
+

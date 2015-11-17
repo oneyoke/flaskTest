@@ -149,6 +149,9 @@ window.addEvent('domready', function() {
                 //$('submitButton').addClass('disabled');
                 //$('retrieveButton').addClass('disabled');
             },
+ 
+
+
             onComplete : function(rqd) {
                 if (rqd) {
                     // a = 5;
@@ -184,6 +187,7 @@ window.addEvent('domready', function() {
             });
             updateRequest.send();
         };
+        
 
         fetchingRequest.send('button=retrieve&example=lcd');
         // $('submitButton').addEvent('click', function(e){

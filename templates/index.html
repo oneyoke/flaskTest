@@ -16,7 +16,15 @@
       $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
       $CSRF_TOKEN = "{{ csrf_token() }}";
       $USER_ID = "{{ user_id }}";
-      
+
+window.onload = function(){                                    
+   var scrollinDiv = document.getElementById('progress');      
+   setInterval(function() {                                    
+        scrollinDiv.scrollTop = 9999;                          
+   }, 100);                                                    
+}                           
+
+
     </script>
 
 </head>
@@ -29,6 +37,18 @@
 			<div class="panel-title"><!--Начало блока "panel-title"-->
         			<ul class="nav nav-tabs"><!--Начало блока  "tabs" -->
             		
+<ul class="dropdown">
+ <li class="dropdown-top">
+ <a class="dropdown-top" style="cursor:pointer"><img src="{{ url_for('static', filename='img/logo.png') }}" style="vertical-align:middle;"></a>
+ <ul class="dropdown-inside">
+ <li><a href="/">Описание</a></li>
+ <li><a href="/">Расписание</a></li>
+ <li><a href="/">О стенде</a></li>
+ <li><a href="/">О проекте</a></li>
+
+ </ul>
+ </li>
+
 						<a href="#" class="button white" style="text-decoration: none" id="checkButton" title="Проверка кода"><img src="{{ url_for('static', filename='img/check.png') }}" style="vertical-align:middle"></a>
                 
                     	<a href="#" class="button white" style="text-decoration: none" id="loadButton" title="Загрузка кода"><img src="{{ url_for('static', filename='img/arrow.png') }}" style="vertical-align:middle"></a>
@@ -42,9 +62,11 @@
                     	<a href="#" class="button white" style="text-decoration: none" id="submitButton" title="Загрузить программу"><img src="{{ url_for('static', filename='img/download.png') }}" style="vertical-align:middle"></a> -->
                               
 			 {{ exampleSelect.exSel2(class_="styled-select green rounded") }}
-            	
-				</ul><!--Конец блока "tabs"-->
 
+            	        <a href="#" class="button white" style="text-decoration: none" id="fullscreen" title="Развернуть"><img src="{{ url_for('static', filename='img/fullscreen.png') }}" style="vertical-align:middle"></a>          	
+			
+			</ul><!--Конец блока "tabs"-->
+			
 			</div><!--Конец блока "panel-title"-->
                     
 
