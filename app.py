@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from flask import Flask, render_template, request, abort, jsonify, url_for
+from flask import Flask, render_template, request, abort, jsonify, url_for, session
 from flask_wtf.csrf import CsrfProtect
 
 #RadioField
@@ -88,6 +88,7 @@ app.debug = False                    # TODO: change this to False on real server
 app.secret_key = 'SuperS3cr3tK3y'   # TODO: change this to something more yours
 targetFilePath = 'upload.ino'
 
+
 @app.route('/target_content_exchange', methods=['GET','POST'])
 def target_content_exchange():
     #exampleSelect = ExampleSelectForm()
@@ -127,7 +128,8 @@ def target_content_exchange():
         #     #return jsonify(outDict)          
 
         if button == 'load':
-            user_id = request.args.get('user_id')
+            #user_id = request.args.get('user_id')
+            user_id = session['username']
             task = upload_task.apply_async([user_id])
             return jsonify({'result': 'updated'}), 202, {'Location': url_for('taskstatusUpload', task_id=task.id)}
             #proc = Popen(['/home/pi/test/build.sh'], shell=True, stderr=None, stdout=None, stdin=None, close_fds=True)
@@ -151,7 +153,8 @@ def target_content_exchange():
             
             # Write data in Unicode
             #f = codecs.open(targetFilePath, 'w+','utf-8')
-            user_id = request.json['user_id']
+            #user_id = request.json['user_id']
+            user_id = session['username']
             f = codecs.open('userino/'+user_id+'.ino', 'w+','utf-8')
             f.write( request.json['content'] )
             f.close()
@@ -162,6 +165,9 @@ def target_content_exchange():
 @app.route('/', methods=['GET'])
 def index_view():
     exampleSelect = ExampleSelectForm()
+    if 'username' not in session:
+        session['username'] = str(uuid.uuid4())
+    print session['username']    
     return render_template('index.html',
                             exampleSelect=exampleSelect,
                             user_id = uuid.uuid4())
