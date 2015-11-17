@@ -11,20 +11,12 @@
     <link href="/static/css/videostyle.css" rel="stylesheet" media="screen">
     <!-- <script src="{{ url_for('static', filename='lib/contrib/ace/theme-monkai.js') }}"></script> -->
     <script src="{{ url_for('static', filename='js/tempscript.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/videoscript.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/video.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/videojs-ie8.min.js') }}"></script>
     <script type=text/javascript>
       $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
       $CSRF_TOKEN = "{{ csrf_token() }}";
       $USER_ID = "{{ user_id }}";
-
-  
-  
-  
-  
-  
-
-
-
     </script>
 
 </head>
@@ -85,7 +77,7 @@
 
 				<div><!--Начало блока "editor"-->
 
-	<video id="my-video" class="video-js" controls autoplay="autoplay">                                   
+	<video id="my-video" class="video-js" controls autoplay="autoplay" data-setup="{}">                                   
 	 
 	<source src="http://109.123.138.152:8080/ogg-360p" type="video/ogg">
   <!--	<source src="http://109.123.138.152:8080/ogg" type="video/ogg"> -->
