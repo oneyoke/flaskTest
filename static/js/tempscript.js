@@ -24,6 +24,16 @@ window.addEvent('domready', function() {
             /*</!ES5-bind>*/
         });
     }
+    function fullScreen(element) {
+        if(element.requestFullscreen) {
+            element.requestFullscreen();
+        } else if(element.webkitrequestFullscreen) {
+            element.webkitRequestFullScreen();
+        } else if(element.mozRequestFullScreen) {
+            element.mozRequestFullScreen();
+        }
+    }
+
     var editor = ace.edit("editor");
     //editor.setTheme("{{ url_for('static', filename='lib/contrib/src-min-noconflict/monkai') }}");
     var CppMode = ace.require("ace/mode/c_cpp").Mode;
@@ -222,6 +232,17 @@ window.addEvent('domready', function() {
         $('exSel2').addEvent('change', function(e){
             e.stop();
             fetchingRequest.send('button=retrieve&example='+this.getSelected().get('value')[0]);
+        });
+        $('fullscreen').addEvent('click', function(e){
+            e.stop();
+            if (document.webkitFullscreenElement) {
+                document.webkitExitFullscreen();
+            } else {
+                var canvas = $('main_app');
+                //fullScreen(canvas);
+                canvas.webkitRequestFullScreen();  
+            }
+
         });
 
     });
