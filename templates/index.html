@@ -9,10 +9,12 @@
     <script src="{{ url_for('static', filename='lib/contrib/ace/mode-c_cpp.js') }}"></script>
     <link href="/static/css/tempstyle.css" rel="stylesheet" media="screen">
     <link href="/static/css/videostyle.css" rel="stylesheet" media="screen">
+    <link href="/static/css/video-quality-selector.css" rel="stylesheet" media="screen">
     <!-- <script src="{{ url_for('static', filename='lib/contrib/ace/theme-monkai.js') }}"></script> -->
     <script src="{{ url_for('static', filename='js/tempscript.js') }}"></script>
     <script src="{{ url_for('static', filename='js/video.js') }}"></script>
     <script src="{{ url_for('static', filename='js/videojs-ie8.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/video-quality-selector.js') }}"></script>
     <script type=text/javascript>
       $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
       $CSRF_TOKEN = "{{ csrf_token() }}";
@@ -78,13 +80,12 @@
 				<div><!--Начало блока "editor"-->
 
 
-	<video id="my-video" class="video-js" controls autoplay="autoplay" data-setup="{}">                                   
+	<video id="my-video" class="video-js vjs-default-skin" controls autoplay="autoplay" data-setup='{ "plugins" : { "resolutionSelector" : { "default_res" : "576" } } }'>                                   
 	 
-<source src="http://109.123.138.152:8080/ogg-360p" type="video/ogg"/>   
 
+		<source src="http://109.123.138.152:8080/ogg" type="video/ogg" data-res="576"/> 
+		<source src="http://109.123.138.152:8080/ogg-360p" type="video/ogg" data-res="360"/>
 
-
-  <!--	<source src="http://109.123.138.152:8080/ogg" type="video/ogg"> -->
                                      
 		 <p class="vjs-no-js">                                                                        
 		 To view this video please enable JavaScript, and consider upgrading to a web browser that    
