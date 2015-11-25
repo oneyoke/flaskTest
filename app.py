@@ -19,6 +19,101 @@ from celery import Celery
 
 import uuid
 
+# Google calendar
+import httplib2
+import os
+from apiclient import discovery
+import oauth2client
+from oauth2client import client
+from oauth2client import tools
+import datetime
+import time
+import threading
+SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
+CLIENT_SECRET_FILE = 'client_secret.json'
+APPLICATION_NAME = 'Google Calendar API Python Quickstart'
+eventsList = []
+try:
+    import argparse
+    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
+except ImportError:
+    flags = None
+
+def get_credentials():
+    """Gets valid user credentials from storage.
+
+    If nothing has been stored, or if the stored credentials are invalid,
+    the OAuth2 flow is completed to obtain the new credentials.
+
+    Returns:
+        Credentials, the obtained credential.
+    """
+    home_dir = os.path.expanduser('~')
+    credential_dir = os.path.join(home_dir, '.credentials')
+    if not os.path.exists(credential_dir):
+        os.makedirs(credential_dir)
+    credential_path = os.path.join(credential_dir,
+                                   'calendar-python-quickstart.json')
+
+    store = oauth2client.file.Storage(credential_path)
+    credentials = store.get()
+    if not credentials or credentials.invalid:
+        flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
+        flow.user_agent = APPLICATION_NAME
+        if flags:
+            credentials = tools.run_flow(flow, store, flags)
+        else: # Needed only for compatibility with Python 2.6
+            credentials = tools.run(flow, store)
+        print('Storing credentials to ' + credential_path)
+    return credentials
+
+def calendar_update():
+    """Shows basic usage of the Google Calendar API.
+
+    Creates a Google Calendar API service object and outputs a list of the next
+    10 events on the user's calendar.
+    """
+    
+    threading.Timer(20, calendar_update).start()
+
+    credentials = get_credentials()
+    http = credentials.authorize(httplib2.Http())
+    service = discovery.build('calendar', 'v3', http=http)
+
+    now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+    #print('Getting the upcoming 10 events')
+    eventsResult = service.events().list(calendarId='h35rg8ljcle23h1s2to16b9g2k@group.calendar.google.com', timeMin=now, maxResults=10, singleEvents=True,orderBy='startTime').execute()
+    events = eventsResult.get('items', [])
+    #import pdb; pdb.set_trace()
+    if not events:
+        print('No upcoming events found.')
+    global eventsList
+    eventsList = []   #Think about
+    for event in events:
+        start = event['start'].get('dateTime', event['start'].get('date'))
+        startepoch = time.mktime(time.strptime(event['start']['dateTime'][:19],'%Y-%m-%dT%H:%M:%S'))
+        end = event['end'].get('dateTime', event['end'].get('date'))
+        endepoch = time.mktime(time.strptime(event['end']['dateTime'][:19],'%Y-%m-%dT%H:%M:%S'))
+        #print(start, end, event['summary'])
+        eventsList += [(startepoch, endepoch, event['summary'])]
+
+    #print(eventsList)
+    print 'is_occupied: ' + str(is_occupied())   
+
+def is_occupied():
+    #threading.Timer(5, is_occupied).start()
+    global eventsList
+    now = time.time()
+    for event in eventsList:
+        if now > event[0] and now < event[1]:
+            print(event[0], event[1], event[2])
+            #print(True)
+            return True
+    #print(False)        
+    return False
+
+
+
 app = Flask(__name__)
 
 # Celery configuration
@@ -129,6 +224,9 @@ def target_content_exchange():
 
         if button == 'load':
             #user_id = request.args.get('user_id')
+            if is_occupied():
+                print("Occupied")
+                return jsonify({'result': 'occupied'})    
             user_id = session['username']
             task = upload_task.apply_async([user_id])
             return jsonify({'result': 'updated'}), 202, {'Location': url_for('taskstatusUpload', task_id=task.id)}
@@ -154,6 +252,9 @@ def target_content_exchange():
             # Write data in Unicode
             #f = codecs.open(targetFilePath, 'w+','utf-8')
             #user_id = request.json['user_id']
+            if is_occupied():
+                print('Occupied')
+                return jsonify({'result': 'occupied'})
             user_id = session['username']
             f = codecs.open('userino/'+user_id+'.ino', 'w+','utf-8')
             f.write( request.json['content'] )
@@ -234,4 +335,8 @@ def taskstatusUpload(task_id):
 
 if __name__ == '__main__':
     #app.run(host="0.0.0.0",port=5002,debug=True)
+    t1 = threading.Timer(5, calendar_update)
+    #t2 = threading.Timer(6, is_occupied)
+    t1.start()
+    #t2.start()
     app.run(host="0.0.0.0",port=8080)

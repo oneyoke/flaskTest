@@ -86,15 +86,28 @@ window.addEvent('domready', function() {
                 //$('submitButton').addClass('disabled');
                 //$('retrieveButton').addClass('disabled');
             },
+            //Consider combination
             onSuccess : function(responseJSON, responseText) {
                 //status_url = request.getResponseHeader('Location');
-                status_url = this.getHeader('Location');
-                update_progress(status_url);
+                if( responseJSON &&
+                    responseJSON.hasOwnProperty('result') &&
+                    responseJSON.result == 'updated'
+                    ) {
+                    status_url = this.getHeader('Location');
+                    update_progress(status_url);
+                } else {
+                    //$('errorsList').grab( new Element('li', {'text' : 'Occupied'}) );  
+                    var objDiv = $('progress')
+                    objDiv.grab(new Element('div', {'text' : 'Occupied'}))
+                    objDiv.scrollTop = objDiv.scrollHeight 
+                }
+                
             },
             onComplete : function(rqd) {
                 if( rqd &&
                     rqd.hasOwnProperty('result') &&
-                    rqd.result == 'updated' /*&&
+                    rqd.result == 'updated' ||
+                    rqd.result == 'occupied' /*&&
                     rqd.hasOwnProperty('digest')*/ ) {
                     editor.setReadOnly(false);
                     //$('submitButton').removeClass('disabled');
@@ -119,11 +132,22 @@ window.addEvent('domready', function() {
             },
             onSuccess : function(responseJSON, responseText) {
                 //status_url = request.getResponseHeader('Location');
-                status_url = this.getHeader('Location');
-                //If Location was provided for update_progress request
-                if (status_url) {
-                    update_progress(status_url);
+                if( responseJSON &&
+                    responseJSON.hasOwnProperty('result') &&
+                    responseJSON.result == 'updated'
+                    ) {
+                    status_url = this.getHeader('Location');
+                    //If Location was provided for update_progress request
+                    if (status_url) {
+                        update_progress(status_url);
+                    }
+                } else {
+                    //$('errorsList').grab( new Element('li', {'text' : 'Occupied'}) );
+                    var objDiv = $('progress')
+                    objDiv.grab(new Element('div', {'text' : 'Occupied'}))
+                    objDiv.scrollTop = objDiv.scrollHeight
                 }
+               
                 
             },
             onComplete : function(rqd) {
