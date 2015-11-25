@@ -1,6 +1,6 @@
 /**
  * @license
- * Video.js 5.0.2 <http://videojs.com/>
+ * Video.js 5.2.2 <http://videojs.com/>
  * Copyright Brightcove, Inc. <https://www.brightcove.com/>
  * Available under Apache License Version 2.0
  * <https://github.com/videojs/video.js/blob/master/LICENSE>
@@ -2213,14 +2213,27 @@ module.exports = function tsml (sa) {
 "use strict";
 var window = _dereq_("global/window")
 var once = _dereq_("once")
+var isFunction = _dereq_("is-function")
 var parseHeaders = _dereq_("parse-headers")
-
-
+var xtend = _dereq_("xtend")
 
 module.exports = createXHR
 createXHR.XMLHttpRequest = window.XMLHttpRequest || noop
 createXHR.XDomainRequest = "withCredentials" in (new createXHR.XMLHttpRequest()) ? createXHR.XMLHttpRequest : window.XDomainRequest
 
+forEachArray(["get", "put", "post", "patch", "head", "delete"], function(method) {
+    createXHR[method === "delete" ? "del" : method] = function(uri, options, callback) {
+        options = initParams(uri, options, callback)
+        options.method = method.toUpperCase()
+        return _createXHR(options)
+    }
+})
+
+function forEachArray(array, iterator) {
+    for (var i = 0; i < array.length; i++) {
+        iterator(array[i])
+    }
+}
 
 function isEmpty(obj){
     for(var i in obj){
@@ -2229,7 +2242,34 @@ function isEmpty(obj){
     return true
 }
 
-function createXHR(options, callback) {
+function initParams(uri, options, callback) {
+    var params = uri
+
+    if (isFunction(options)) {
+        callback = options
+        if (typeof uri === "string") {
+            params = {uri:uri}
+        }
+    } else {
+        params = xtend(options, {uri: uri})
+    }
+
+    params.callback = callback
+    return params
+}
+
+function createXHR(uri, options, callback) {
+    options = initParams(uri, options, callback)
+    return _createXHR(options)
+}
+
+function _createXHR(options) {
+    var callback = options.callback
+    if(typeof callback === "undefined"){
+        throw new Error("callback argument missing")
+    }
+    callback = once(callback)
+
     function readystatechange() {
         if (xhr.readyState === 4) {
             loadFunc()
@@ -2306,16 +2346,6 @@ function createXHR(options, callback) {
 
     }
 
-    if (typeof options === "string") {
-        options = { uri: options }
-    }
-
-    options = options || {}
-    if(typeof callback === "undefined"){
-        throw new Error("callback argument missing")
-    }
-    callback = once(callback)
-
     var xhr = options.xhr || null
 
     if (!xhr) {
@@ -2330,7 +2360,7 @@ function createXHR(options, callback) {
     var aborted
     var uri = xhr.url = options.uri || options.url
     var method = xhr.method = options.method || "GET"
-    var body = options.body || options.data
+    var body = options.body || options.data || null
     var headers = xhr.headers = options.headers || {}
     var sync = !!options.sync
     var isJson = false
@@ -2400,7 +2430,24 @@ function createXHR(options, callback) {
 
 function noop() {}
 
-},{"global/window":2,"once":56,"parse-headers":60}],56:[function(_dereq_,module,exports){
+},{"global/window":2,"is-function":56,"once":57,"parse-headers":60,"xtend":61}],56:[function(_dereq_,module,exports){
+module.exports = isFunction
+
+var toString = Object.prototype.toString
+
+function isFunction (fn) {
+  var string = toString.call(fn)
+  return string === '[object Function]' ||
+    (typeof fn === 'function' && string !== '[object RegExp]') ||
+    (typeof window !== 'undefined' &&
+     // IE8 and below
+     (fn === window.setTimeout ||
+      fn === window.alert ||
+      fn === window.confirm ||
+      fn === window.prompt))
+};
+
+},{}],57:[function(_dereq_,module,exports){
 module.exports = once
 
 once.proto = once(function () {
@@ -2421,7 +2468,7 @@ function once (fn) {
   }
 }
 
-},{}],57:[function(_dereq_,module,exports){
+},{}],58:[function(_dereq_,module,exports){
 var isFunction = _dereq_('is-function')
 
 module.exports = forEach
@@ -2469,24 +2516,7 @@ function forEachObject(object, iterator, context) {
     }
 }
 
-},{"is-function":58}],58:[function(_dereq_,module,exports){
-module.exports = isFunction
-
-var toString = Object.prototype.toString
-
-function isFunction (fn) {
-  var string = toString.call(fn)
-  return string === '[object Function]' ||
-    (typeof fn === 'function' && string !== '[object RegExp]') ||
-    (typeof window !== 'undefined' &&
-     // IE8 and below
-     (fn === window.setTimeout ||
-      fn === window.alert ||
-      fn === window.confirm ||
-      fn === window.prompt))
-};
-
-},{}],59:[function(_dereq_,module,exports){
+},{"is-function":56}],59:[function(_dereq_,module,exports){
 
 exports = module.exports = trim;
 
@@ -2534,7 +2564,28 @@ module.exports = function (headers) {
 
   return result
 }
-},{"for-each":57,"trim":59}],61:[function(_dereq_,module,exports){
+},{"for-each":58,"trim":59}],61:[function(_dereq_,module,exports){
+module.exports = extend
+
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+function extend() {
+    var target = {}
+
+    for (var i = 0; i < arguments.length; i++) {
+        var source = arguments[i]
+
+        for (var key in source) {
+            if (hasOwnProperty.call(source, key)) {
+                target[key] = source[key]
+            }
+        }
+    }
+
+    return target
+}
+
+},{}],62:[function(_dereq_,module,exports){
 /**
  * @file big-play-button.js
  */
@@ -2605,7 +2656,7 @@ _componentJs2['default'].registerComponent('BigPlayButton', BigPlayButton);
 exports['default'] = BigPlayButton;
 module.exports = exports['default'];
 
-},{"./button.js":62,"./component.js":63}],62:[function(_dereq_,module,exports){
+},{"./button.js":63,"./component.js":65}],63:[function(_dereq_,module,exports){
 /**
  * @file button.js
  */
@@ -2786,7 +2837,59 @@ _component2['default'].registerComponent('Button', Button);
 exports['default'] = Button;
 module.exports = exports['default'];
 
-},{"./component":63,"./utils/dom.js":123,"./utils/events.js":124,"./utils/fn.js":125,"global/document":1,"object.assign":45}],63:[function(_dereq_,module,exports){
+},{"./component":65,"./utils/dom.js":126,"./utils/events.js":127,"./utils/fn.js":128,"global/document":1,"object.assign":45}],64:[function(_dereq_,module,exports){
+'use strict';
+
+exports.__esModule = true;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _button = _dereq_('./button');
+
+var _button2 = _interopRequireDefault(_button);
+
+var _component = _dereq_('./component');
+
+var _component2 = _interopRequireDefault(_component);
+
+/**
+ * The `CloseButton` component is a button which fires a "close" event
+ * when it is activated.
+ *
+ * @extends Button
+ * @class CloseButton
+ */
+
+var CloseButton = (function (_Button) {
+  _inherits(CloseButton, _Button);
+
+  function CloseButton(player, options) {
+    _classCallCheck(this, CloseButton);
+
+    _Button.call(this, player, options);
+    this.controlText(options && options.controlText || this.localize('Close'));
+  }
+
+  CloseButton.prototype.buildCSSClass = function buildCSSClass() {
+    return 'vjs-close-button ' + _Button.prototype.buildCSSClass.call(this);
+  };
+
+  CloseButton.prototype.handleClick = function handleClick() {
+    this.trigger({ type: 'close', bubbles: false });
+  };
+
+  return CloseButton;
+})(_button2['default']);
+
+_component2['default'].registerComponent('CloseButton', CloseButton);
+exports['default'] = CloseButton;
+module.exports = exports['default'];
+
+},{"./button":63,"./component":65}],65:[function(_dereq_,module,exports){
 /**
  * @file component.js
  *
@@ -3208,6 +3311,18 @@ var Component = (function () {
       // If there's no .player_, this is a player
       var ComponentClass = Component.getComponent(componentClassName);
 
+      if (!ComponentClass) {
+        throw new Error('Component ' + componentClassName + ' does not exist');
+      }
+
+      // data stored directly on the videojs object may be
+      // misidentified as a component to retain
+      // backwards-compatibility with 4.x. check to make sure the
+      // component class can be instantiated.
+      if (typeof ComponentClass !== 'function') {
+        return null;
+      }
+
       component = new ComponentClass(this.player_ || this, options);
 
       // child is a component instance
@@ -3337,7 +3452,10 @@ var Component = (function () {
         // `this` is `parent`
         var parentOptions = _this.options_;
 
-        var handleAdd = function handleAdd(name, opts) {
+        var handleAdd = function handleAdd(child) {
+          var name = child.name;
+          var opts = child.opts;
+
           // Allow options for children to be set at the parent options
           // e.g. videojs(id, { controlBar: false });
           // instead of videojs(id, { children: { controlBar: false });
@@ -3365,33 +3483,53 @@ var Component = (function () {
           // Add a direct reference to the child by name on the parent instance.
           // If two of the same component are used, different names should be supplied
           // for each
-          _this[name] = _this.addChild(name, opts);
+          var newChild = _this.addChild(name, opts);
+          if (newChild) {
+            _this[name] = newChild;
+          }
         };
 
         // Allow for an array of children details to passed in the options
+        var workingChildren = undefined;
+        var Tech = Component.getComponent('Tech');
+
         if (Array.isArray(children)) {
-          for (var i = 0; i < children.length; i++) {
-            var child = children[i];
-            var _name = undefined;
-            var opts = undefined;
-
-            if (typeof child === 'string') {
-              // ['myComponent']
-              _name = child;
-              opts = {};
-            } else {
-              // [{ name: 'myComponent', otherOption: true }]
-              _name = child.name;
-              opts = child;
-            }
-
-            handleAdd(_name, opts);
-          }
+          workingChildren = children;
         } else {
-          Object.getOwnPropertyNames(children).forEach(function (name) {
-            handleAdd(name, children[name]);
-          });
+          workingChildren = Object.keys(children);
         }
+
+        workingChildren
+        // children that are in this.options_ but also in workingChildren  would
+        // give us extra children we do not want. So, we want to filter them out.
+        .concat(Object.keys(_this.options_).filter(function (child) {
+          return !workingChildren.some(function (wchild) {
+            if (typeof wchild === 'string') {
+              return child === wchild;
+            } else {
+              return child === wchild.name;
+            }
+          });
+        })).map(function (child) {
+          var name = undefined,
+              opts = undefined;
+
+          if (typeof child === 'string') {
+            name = child;
+            opts = children[name] || _this.options_[name] || {};
+          } else {
+            name = child.name;
+            opts = child;
+          }
+
+          return { name: name, opts: opts };
+        }).filter(function (child) {
+          // we have to make sure that child.name isn't in the techOrder since
+          // techs are registerd as Components but can't aren't compatible
+          // See https://github.com/videojs/video.js/issues/2772
+          var c = Component.getComponent(child.opts.componentClass || _utilsToTitleCaseJs2['default'](child.name));
+          return c && !Tech.isTech(c);
+        }).forEach(handleAdd);
       })();
     }
   };
@@ -3667,6 +3805,48 @@ var Component = (function () {
   };
 
   /**
+   * Finds a single DOM element matching `selector` within the component's
+   * `contentEl` or another custom context.
+   *
+   * @method $
+   * @param  {String} selector
+   *         A valid CSS selector, which will be passed to `querySelector`.
+   *
+   * @param  {Element|String} [context=document]
+   *         A DOM element within which to query. Can also be a selector
+   *         string in which case the first matching element will be used
+   *         as context. If missing (or no element matches selector), falls
+   *         back to `document`.
+   *
+   * @return {Element|null}
+   */
+
+  Component.prototype.$ = function $(selector, context) {
+    return Dom.$(selector, context || this.contentEl());
+  };
+
+  /**
+   * Finds a all DOM elements matching `selector` within the component's
+   * `contentEl` or another custom context.
+   *
+   * @method $$
+   * @param  {String} selector
+   *         A valid CSS selector, which will be passed to `querySelectorAll`.
+   *
+   * @param  {Element|String} [context=document]
+   *         A DOM element within which to query. Can also be a selector
+   *         string in which case the first matching element will be used
+   *         as context. If missing (or no element matches selector), falls
+   *         back to `document`.
+   *
+   * @return {NodeList}
+   */
+
+  Component.prototype.$$ = function $$(selector, context) {
+    return Dom.$$(selector, context || this.contentEl());
+  };
+
+  /**
    * Check if a component's element has a CSS class name
    *
    * @param {String} classToCheck Classname to check
@@ -3692,7 +3872,7 @@ var Component = (function () {
   };
 
   /**
-   * Remove and return a CSS class name from the component's element
+   * Remove a CSS class name from the component's element
    *
    * @param {String} classToRemove Classname to remove
    * @return {Component}
@@ -3701,6 +3881,24 @@ var Component = (function () {
 
   Component.prototype.removeClass = function removeClass(classToRemove) {
     Dom.removeElClass(this.el_, classToRemove);
+    return this;
+  };
+
+  /**
+   * Add or remove a CSS class name from the component's element
+   *
+   * @param  {String} classToToggle
+   * @param  {Boolean|Function} [predicate]
+   *         Can be a function that returns a Boolean. If `true`, the class
+   *         will be added; if `false`, the class will be removed. If not
+   *         given, the class will be added if not present and vice versa.
+   *
+   * @return {Component}
+   * @method toggleClass
+   */
+
+  Component.prototype.toggleClass = function toggleClass(classToToggle, predicate) {
+    Dom.toggleElClass(this.el_, classToToggle, predicate);
     return this;
   };
 
@@ -4179,9 +4377,9 @@ var Component = (function () {
     subObj.extend = Component.extend;
 
     // Extend subObj's prototype with functions and other properties from props
-    for (var _name2 in props) {
-      if (props.hasOwnProperty(_name2)) {
-        subObj.prototype[_name2] = props[_name2];
+    for (var _name in props) {
+      if (props.hasOwnProperty(_name)) {
+        subObj.prototype[_name] = props[_name];
       }
     }
 
@@ -4195,7 +4393,7 @@ Component.registerComponent('Component', Component);
 exports['default'] = Component;
 module.exports = exports['default'];
 
-},{"./utils/dom.js":123,"./utils/events.js":124,"./utils/fn.js":125,"./utils/guid.js":127,"./utils/log.js":128,"./utils/merge-options.js":129,"./utils/to-title-case.js":132,"global/window":2,"object.assign":45}],64:[function(_dereq_,module,exports){
+},{"./utils/dom.js":126,"./utils/events.js":127,"./utils/fn.js":128,"./utils/guid.js":130,"./utils/log.js":131,"./utils/merge-options.js":132,"./utils/to-title-case.js":135,"global/window":2,"object.assign":45}],66:[function(_dereq_,module,exports){
 /**
  * @file control-bar.js
  */
@@ -4320,7 +4518,7 @@ _componentJs2['default'].registerComponent('ControlBar', ControlBar);
 exports['default'] = ControlBar;
 module.exports = exports['default'];
 
-},{"../component.js":63,"./fullscreen-toggle.js":65,"./live-display.js":66,"./mute-toggle.js":67,"./play-toggle.js":68,"./playback-rate-menu/playback-rate-menu-button.js":69,"./progress-control/progress-control.js":74,"./spacer-controls/custom-control-spacer.js":76,"./text-track-controls/captions-button.js":79,"./text-track-controls/chapters-button.js":80,"./text-track-controls/subtitles-button.js":83,"./time-controls/current-time-display.js":86,"./time-controls/duration-display.js":87,"./time-controls/remaining-time-display.js":88,"./time-controls/time-divider.js":89,"./volume-control/volume-control.js":91,"./volume-menu-button.js":93}],65:[function(_dereq_,module,exports){
+},{"../component.js":65,"./fullscreen-toggle.js":67,"./live-display.js":68,"./mute-toggle.js":69,"./play-toggle.js":70,"./playback-rate-menu/playback-rate-menu-button.js":71,"./progress-control/progress-control.js":76,"./spacer-controls/custom-control-spacer.js":78,"./text-track-controls/captions-button.js":81,"./text-track-controls/chapters-button.js":82,"./text-track-controls/subtitles-button.js":85,"./time-controls/current-time-display.js":88,"./time-controls/duration-display.js":89,"./time-controls/remaining-time-display.js":90,"./time-controls/time-divider.js":91,"./volume-control/volume-control.js":93,"./volume-menu-button.js":95}],67:[function(_dereq_,module,exports){
 /**
  * @file fullscreen-toggle.js
  */
@@ -4394,7 +4592,7 @@ _componentJs2['default'].registerComponent('FullscreenToggle', FullscreenToggle)
 exports['default'] = FullscreenToggle;
 module.exports = exports['default'];
 
-},{"../button.js":62,"../component.js":63}],66:[function(_dereq_,module,exports){
+},{"../button.js":63,"../component.js":65}],68:[function(_dereq_,module,exports){
 /**
  * @file live-display.js
  */
@@ -4476,7 +4674,7 @@ _component2['default'].registerComponent('LiveDisplay', LiveDisplay);
 exports['default'] = LiveDisplay;
 module.exports = exports['default'];
 
-},{"../component":63,"../utils/dom.js":123}],67:[function(_dereq_,module,exports){
+},{"../component":65,"../utils/dom.js":126}],69:[function(_dereq_,module,exports){
 /**
  * @file mute-toggle.js
  */
@@ -4603,7 +4801,7 @@ _component2['default'].registerComponent('MuteToggle', MuteToggle);
 exports['default'] = MuteToggle;
 module.exports = exports['default'];
 
-},{"../button":62,"../component":63,"../utils/dom.js":123}],68:[function(_dereq_,module,exports){
+},{"../button":63,"../component":65,"../utils/dom.js":126}],70:[function(_dereq_,module,exports){
 /**
  * @file play-toggle.js
  */
@@ -4704,7 +4902,7 @@ _componentJs2['default'].registerComponent('PlayToggle', PlayToggle);
 exports['default'] = PlayToggle;
 module.exports = exports['default'];
 
-},{"../button.js":62,"../component.js":63}],69:[function(_dereq_,module,exports){
+},{"../button.js":63,"../component.js":65}],71:[function(_dereq_,module,exports){
 /**
  * @file playback-rate-menu-button.js
  */
@@ -4905,7 +5103,7 @@ _componentJs2['default'].registerComponent('PlaybackRateMenuButton', PlaybackRat
 exports['default'] = PlaybackRateMenuButton;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"../../menu/menu-button.js":100,"../../menu/menu.js":102,"../../utils/dom.js":123,"./playback-rate-menu-item.js":70}],70:[function(_dereq_,module,exports){
+},{"../../component.js":65,"../../menu/menu-button.js":102,"../../menu/menu.js":104,"../../utils/dom.js":126,"./playback-rate-menu-item.js":72}],72:[function(_dereq_,module,exports){
 /**
  * @file playback-rate-menu-item.js
  */
@@ -4986,7 +5184,7 @@ _componentJs2['default'].registerComponent('PlaybackRateMenuItem', PlaybackRateM
 exports['default'] = PlaybackRateMenuItem;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"../../menu/menu-item.js":101}],71:[function(_dereq_,module,exports){
+},{"../../component.js":65,"../../menu/menu-item.js":103}],73:[function(_dereq_,module,exports){
 /**
  * @file load-progress-bar.js
  */
@@ -5092,7 +5290,7 @@ _componentJs2['default'].registerComponent('LoadProgressBar', LoadProgressBar);
 exports['default'] = LoadProgressBar;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"../../utils/dom.js":123}],72:[function(_dereq_,module,exports){
+},{"../../component.js":65,"../../utils/dom.js":126}],74:[function(_dereq_,module,exports){
 /**
  * @file mouse-time-display.js
  */
@@ -5194,7 +5392,7 @@ _componentJs2['default'].registerComponent('MouseTimeDisplay', MouseTimeDisplay)
 exports['default'] = MouseTimeDisplay;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"../../utils/dom.js":123,"../../utils/fn.js":125,"../../utils/format-time.js":126,"lodash-compat/function/throttle":7}],73:[function(_dereq_,module,exports){
+},{"../../component.js":65,"../../utils/dom.js":126,"../../utils/fn.js":128,"../../utils/format-time.js":129,"lodash-compat/function/throttle":7}],75:[function(_dereq_,module,exports){
 /**
  * @file play-progress-bar.js
  */
@@ -5269,7 +5467,7 @@ _componentJs2['default'].registerComponent('PlayProgressBar', PlayProgressBar);
 exports['default'] = PlayProgressBar;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"../../utils/fn.js":125,"../../utils/format-time.js":126}],74:[function(_dereq_,module,exports){
+},{"../../component.js":65,"../../utils/fn.js":128,"../../utils/format-time.js":129}],76:[function(_dereq_,module,exports){
 /**
  * @file progress-control.js
  */
@@ -5338,7 +5536,7 @@ _componentJs2['default'].registerComponent('ProgressControl', ProgressControl);
 exports['default'] = ProgressControl;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"./mouse-time-display.js":72,"./seek-bar.js":75}],75:[function(_dereq_,module,exports){
+},{"../../component.js":65,"./mouse-time-display.js":74,"./seek-bar.js":77}],77:[function(_dereq_,module,exports){
 /**
  * @file seek-bar.js
  */
@@ -5524,7 +5722,7 @@ _componentJs2['default'].registerComponent('SeekBar', SeekBar);
 exports['default'] = SeekBar;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"../../slider/slider.js":107,"../../utils/fn.js":125,"../../utils/format-time.js":126,"./load-progress-bar.js":71,"./play-progress-bar.js":73,"object.assign":45}],76:[function(_dereq_,module,exports){
+},{"../../component.js":65,"../../slider/slider.js":110,"../../utils/fn.js":128,"../../utils/format-time.js":129,"./load-progress-bar.js":73,"./play-progress-bar.js":75,"object.assign":45}],78:[function(_dereq_,module,exports){
 /**
  * @file custom-control-spacer.js
  */
@@ -5598,7 +5796,7 @@ _componentJs2['default'].registerComponent('CustomControlSpacer', CustomControlS
 exports['default'] = CustomControlSpacer;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"./spacer.js":77}],77:[function(_dereq_,module,exports){
+},{"../../component.js":65,"./spacer.js":79}],79:[function(_dereq_,module,exports){
 /**
  * @file spacer.js
  */
@@ -5665,7 +5863,7 @@ _componentJs2['default'].registerComponent('Spacer', Spacer);
 exports['default'] = Spacer;
 module.exports = exports['default'];
 
-},{"../../component.js":63}],78:[function(_dereq_,module,exports){
+},{"../../component.js":65}],80:[function(_dereq_,module,exports){
 /**
  * @file caption-settings-menu-item.js
  */
@@ -5731,7 +5929,7 @@ _componentJs2['default'].registerComponent('CaptionSettingsMenuItem', CaptionSet
 exports['default'] = CaptionSettingsMenuItem;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"./text-track-menu-item.js":85}],79:[function(_dereq_,module,exports){
+},{"../../component.js":65,"./text-track-menu-item.js":87}],81:[function(_dereq_,module,exports){
 /**
  * @file captions-button.js
  */
@@ -5837,7 +6035,7 @@ _componentJs2['default'].registerComponent('CaptionsButton', CaptionsButton);
 exports['default'] = CaptionsButton;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"./caption-settings-menu-item.js":78,"./text-track-button.js":84}],80:[function(_dereq_,module,exports){
+},{"../../component.js":65,"./caption-settings-menu-item.js":80,"./text-track-button.js":86}],82:[function(_dereq_,module,exports){
 /**
  * @file chapters-button.js
  */
@@ -6026,7 +6224,7 @@ _componentJs2['default'].registerComponent('ChaptersButton', ChaptersButton);
 exports['default'] = ChaptersButton;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"../../menu/menu.js":102,"../../utils/dom.js":123,"../../utils/fn.js":125,"../../utils/to-title-case.js":132,"./chapters-track-menu-item.js":81,"./text-track-button.js":84,"./text-track-menu-item.js":85,"global/window":2}],81:[function(_dereq_,module,exports){
+},{"../../component.js":65,"../../menu/menu.js":104,"../../utils/dom.js":126,"../../utils/fn.js":128,"../../utils/to-title-case.js":135,"./chapters-track-menu-item.js":83,"./text-track-button.js":86,"./text-track-menu-item.js":87,"global/window":2}],83:[function(_dereq_,module,exports){
 /**
  * @file chapters-track-menu-item.js
  */
@@ -6116,7 +6314,7 @@ _componentJs2['default'].registerComponent('ChaptersTrackMenuItem', ChaptersTrac
 exports['default'] = ChaptersTrackMenuItem;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"../../menu/menu-item.js":101,"../../utils/fn.js":125}],82:[function(_dereq_,module,exports){
+},{"../../component.js":65,"../../menu/menu-item.js":103,"../../utils/fn.js":128}],84:[function(_dereq_,module,exports){
 /**
  * @file off-text-track-menu-item.js
  */
@@ -6196,7 +6394,7 @@ _componentJs2['default'].registerComponent('OffTextTrackMenuItem', OffTextTrackM
 exports['default'] = OffTextTrackMenuItem;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"./text-track-menu-item.js":85}],83:[function(_dereq_,module,exports){
+},{"../../component.js":65,"./text-track-menu-item.js":87}],85:[function(_dereq_,module,exports){
 /**
  * @file subtitles-button.js
  */
@@ -6259,7 +6457,7 @@ _componentJs2['default'].registerComponent('SubtitlesButton', SubtitlesButton);
 exports['default'] = SubtitlesButton;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"./text-track-button.js":84}],84:[function(_dereq_,module,exports){
+},{"../../component.js":65,"./text-track-button.js":86}],86:[function(_dereq_,module,exports){
 /**
  * @file text-track-button.js
  */
@@ -6367,7 +6565,7 @@ _componentJs2['default'].registerComponent('TextTrackButton', TextTrackButton);
 exports['default'] = TextTrackButton;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"../../menu/menu-button.js":100,"../../utils/fn.js":125,"./off-text-track-menu-item.js":82,"./text-track-menu-item.js":85}],85:[function(_dereq_,module,exports){
+},{"../../component.js":65,"../../menu/menu-button.js":102,"../../utils/fn.js":128,"./off-text-track-menu-item.js":84,"./text-track-menu-item.js":87}],87:[function(_dereq_,module,exports){
 /**
  * @file text-track-menu-item.js
  */
@@ -6516,7 +6714,7 @@ _componentJs2['default'].registerComponent('TextTrackMenuItem', TextTrackMenuIte
 exports['default'] = TextTrackMenuItem;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"../../menu/menu-item.js":101,"../../utils/fn.js":125,"global/document":1,"global/window":2}],86:[function(_dereq_,module,exports){
+},{"../../component.js":65,"../../menu/menu-item.js":103,"../../utils/fn.js":128,"global/document":1,"global/window":2}],88:[function(_dereq_,module,exports){
 /**
  * @file current-time-display.js
  */
@@ -6610,7 +6808,7 @@ _componentJs2['default'].registerComponent('CurrentTimeDisplay', CurrentTimeDisp
 exports['default'] = CurrentTimeDisplay;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"../../utils/dom.js":123,"../../utils/format-time.js":126}],87:[function(_dereq_,module,exports){
+},{"../../component.js":65,"../../utils/dom.js":126,"../../utils/format-time.js":129}],89:[function(_dereq_,module,exports){
 /**
  * @file duration-display.js
  */
@@ -6711,7 +6909,7 @@ _componentJs2['default'].registerComponent('DurationDisplay', DurationDisplay);
 exports['default'] = DurationDisplay;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"../../utils/dom.js":123,"../../utils/format-time.js":126}],88:[function(_dereq_,module,exports){
+},{"../../component.js":65,"../../utils/dom.js":126,"../../utils/format-time.js":129}],90:[function(_dereq_,module,exports){
 /**
  * @file remaining-time-display.js
  */
@@ -6809,7 +7007,7 @@ _componentJs2['default'].registerComponent('RemainingTimeDisplay', RemainingTime
 exports['default'] = RemainingTimeDisplay;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"../../utils/dom.js":123,"../../utils/format-time.js":126}],89:[function(_dereq_,module,exports){
+},{"../../component.js":65,"../../utils/dom.js":126,"../../utils/format-time.js":129}],91:[function(_dereq_,module,exports){
 /**
  * @file time-divider.js
  */
@@ -6867,7 +7065,7 @@ _componentJs2['default'].registerComponent('TimeDivider', TimeDivider);
 exports['default'] = TimeDivider;
 module.exports = exports['default'];
 
-},{"../../component.js":63}],90:[function(_dereq_,module,exports){
+},{"../../component.js":65}],92:[function(_dereq_,module,exports){
 /**
  * @file volume-bar.js
  */
@@ -7012,7 +7210,7 @@ _componentJs2['default'].registerComponent('VolumeBar', VolumeBar);
 exports['default'] = VolumeBar;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"../../slider/slider.js":107,"../../utils/fn.js":125,"./volume-level.js":92}],91:[function(_dereq_,module,exports){
+},{"../../component.js":65,"../../slider/slider.js":110,"../../utils/fn.js":128,"./volume-level.js":94}],93:[function(_dereq_,module,exports){
 /**
  * @file volume-control.js
  */
@@ -7090,7 +7288,7 @@ _componentJs2['default'].registerComponent('VolumeControl', VolumeControl);
 exports['default'] = VolumeControl;
 module.exports = exports['default'];
 
-},{"../../component.js":63,"./volume-bar.js":90}],92:[function(_dereq_,module,exports){
+},{"../../component.js":65,"./volume-bar.js":92}],94:[function(_dereq_,module,exports){
 /**
  * @file volume-level.js
  */
@@ -7147,7 +7345,7 @@ _componentJs2['default'].registerComponent('VolumeLevel', VolumeLevel);
 exports['default'] = VolumeLevel;
 module.exports = exports['default'];
 
-},{"../../component.js":63}],93:[function(_dereq_,module,exports){
+},{"../../component.js":65}],95:[function(_dereq_,module,exports){
 /**
  * @file volume-menu-button.js
  */
@@ -7309,7 +7507,7 @@ _componentJs2['default'].registerComponent('VolumeMenuButton', VolumeMenuButton)
 exports['default'] = VolumeMenuButton;
 module.exports = exports['default'];
 
-},{"../button.js":62,"../component.js":63,"../menu/menu-button.js":100,"../menu/menu.js":102,"./mute-toggle.js":67,"./volume-control/volume-bar.js":90}],94:[function(_dereq_,module,exports){
+},{"../button.js":63,"../component.js":65,"../menu/menu-button.js":102,"../menu/menu.js":104,"./mute-toggle.js":69,"./volume-control/volume-bar.js":92}],96:[function(_dereq_,module,exports){
 /**
  * @file error-display.js
  */
@@ -7329,69 +7527,80 @@ var _component = _dereq_('./component');
 
 var _component2 = _interopRequireDefault(_component);
 
-var _utilsDomJs = _dereq_('./utils/dom.js');
+var _modalDialog = _dereq_('./modal-dialog');
 
-var Dom = _interopRequireWildcard(_utilsDomJs);
+var _modalDialog2 = _interopRequireDefault(_modalDialog);
+
+var _utilsDom = _dereq_('./utils/dom');
+
+var Dom = _interopRequireWildcard(_utilsDom);
+
+var _utilsMergeOptions = _dereq_('./utils/merge-options');
+
+var _utilsMergeOptions2 = _interopRequireDefault(_utilsMergeOptions);
 
 /**
- * Display that an error has occurred making the video unplayable
+ * Display that an error has occurred making the video unplayable.
  *
- * @param {Object} player  Main Player
- * @param {Object=} options Object of option names and values
- * @extends Component
+ * @extends ModalDialog
  * @class ErrorDisplay
  */
 
-var ErrorDisplay = (function (_Component) {
-  _inherits(ErrorDisplay, _Component);
+var ErrorDisplay = (function (_ModalDialog) {
+  _inherits(ErrorDisplay, _ModalDialog);
+
+  /**
+   * Constructor for error display modal.
+   *
+   * @param  {Player} player
+   * @param  {Object} [options]
+   */
 
   function ErrorDisplay(player, options) {
     _classCallCheck(this, ErrorDisplay);
 
-    _Component.call(this, player, options);
-
-    this.update();
-    this.on(player, 'error', this.update);
+    _ModalDialog.call(this, player, options);
+    this.on(player, 'error', this.open);
   }
 
   /**
-   * Create the component's DOM element
+   * Include the old class for backward-compatibility.
    *
-   * @return {Element}
-   * @method createEl
+   * This can be removed in 6.0.
+   *
+   * @method buildCSSClass
+   * @deprecated
+   * @return {String}
    */
 
-  ErrorDisplay.prototype.createEl = function createEl() {
-    var el = _Component.prototype.createEl.call(this, 'div', {
-      className: 'vjs-error-display'
-    });
-
-    this.contentEl_ = Dom.createEl('div');
-    el.appendChild(this.contentEl_);
-
-    return el;
+  ErrorDisplay.prototype.buildCSSClass = function buildCSSClass() {
+    return 'vjs-error-display ' + _ModalDialog.prototype.buildCSSClass.call(this);
   };
 
   /**
-   * Update the error message in localized language
+   * Generates the modal content based on the player error.
    *
-   * @method update
+   * @return {String|Null}
    */
 
-  ErrorDisplay.prototype.update = function update() {
-    if (this.player().error()) {
-      this.contentEl_.innerHTML = this.localize(this.player().error().message);
-    }
+  ErrorDisplay.prototype.content = function content() {
+    var error = this.player().error();
+    return error ? this.localize(error.message) : '';
   };
 
   return ErrorDisplay;
-})(_component2['default']);
+})(_modalDialog2['default']);
+
+ErrorDisplay.prototype.options_ = _utilsMergeOptions2['default'](_modalDialog2['default'].prototype.options_, {
+  fillAlways: true,
+  uncloseable: true
+});
 
 _component2['default'].registerComponent('ErrorDisplay', ErrorDisplay);
 exports['default'] = ErrorDisplay;
 module.exports = exports['default'];
 
-},{"./component":63,"./utils/dom.js":123}],95:[function(_dereq_,module,exports){
+},{"./component":65,"./modal-dialog":105,"./utils/dom":126,"./utils/merge-options":132}],97:[function(_dereq_,module,exports){
 /**
  * @file event-target.js
  */
@@ -7450,7 +7659,7 @@ EventTarget.prototype.dispatchEvent = EventTarget.prototype.trigger;
 exports['default'] = EventTarget;
 module.exports = exports['default'];
 
-},{"./utils/events.js":124}],96:[function(_dereq_,module,exports){
+},{"./utils/events.js":127}],98:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -7541,7 +7750,7 @@ var extendFn = function extendFn(superClass) {
 exports['default'] = extendFn;
 module.exports = exports['default'];
 
-},{"./utils/log":128}],97:[function(_dereq_,module,exports){
+},{"./utils/log":131}],99:[function(_dereq_,module,exports){
 /**
  * @file fullscreen-api.js
  */
@@ -7598,7 +7807,7 @@ if (browserApi) {
 exports['default'] = FullscreenApi;
 module.exports = exports['default'];
 
-},{"global/document":1}],98:[function(_dereq_,module,exports){
+},{"global/document":1}],100:[function(_dereq_,module,exports){
 /**
  * @file loading-spinner.js
  */
@@ -7653,7 +7862,7 @@ _component2['default'].registerComponent('LoadingSpinner', LoadingSpinner);
 exports['default'] = LoadingSpinner;
 module.exports = exports['default'];
 
-},{"./component":63}],99:[function(_dereq_,module,exports){
+},{"./component":65}],101:[function(_dereq_,module,exports){
 /**
  * @file media-error.js
  */
@@ -7744,7 +7953,7 @@ for (var errNum = 0; errNum < MediaError.errorTypes.length; errNum++) {
 exports['default'] = MediaError;
 module.exports = exports['default'];
 
-},{"object.assign":45}],100:[function(_dereq_,module,exports){
+},{"object.assign":45}],102:[function(_dereq_,module,exports){
 /**
  * @file menu-button.js
  */
@@ -8018,7 +8227,7 @@ _componentJs2['default'].registerComponent('MenuButton', MenuButton);
 exports['default'] = MenuButton;
 module.exports = exports['default'];
 
-},{"../button.js":62,"../component.js":63,"../utils/dom.js":123,"../utils/fn.js":125,"../utils/to-title-case.js":132,"./menu.js":102}],101:[function(_dereq_,module,exports){
+},{"../button.js":63,"../component.js":65,"../utils/dom.js":126,"../utils/fn.js":128,"../utils/to-title-case.js":135,"./menu.js":104}],103:[function(_dereq_,module,exports){
 /**
  * @file menu-item.js
  */
@@ -8113,7 +8322,7 @@ _componentJs2['default'].registerComponent('MenuItem', MenuItem);
 exports['default'] = MenuItem;
 module.exports = exports['default'];
 
-},{"../button.js":62,"../component.js":63,"object.assign":45}],102:[function(_dereq_,module,exports){
+},{"../button.js":63,"../component.js":65,"object.assign":45}],104:[function(_dereq_,module,exports){
 /**
  * @file menu.js
  */
@@ -8211,7 +8420,430 @@ _componentJs2['default'].registerComponent('Menu', Menu);
 exports['default'] = Menu;
 module.exports = exports['default'];
 
-},{"../component.js":63,"../utils/dom.js":123,"../utils/events.js":124,"../utils/fn.js":125}],103:[function(_dereq_,module,exports){
+},{"../component.js":65,"../utils/dom.js":126,"../utils/events.js":127,"../utils/fn.js":128}],105:[function(_dereq_,module,exports){
+/**
+ * @file modal-dialog.js
+ */
+'use strict';
+
+exports.__esModule = true;
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _globalDocument = _dereq_('global/document');
+
+var _globalDocument2 = _interopRequireDefault(_globalDocument);
+
+var _utilsDom = _dereq_('./utils/dom');
+
+var Dom = _interopRequireWildcard(_utilsDom);
+
+var _utilsFn = _dereq_('./utils/fn');
+
+var Fn = _interopRequireWildcard(_utilsFn);
+
+var _utilsLog = _dereq_('./utils/log');
+
+var _utilsLog2 = _interopRequireDefault(_utilsLog);
+
+var _component = _dereq_('./component');
+
+var _component2 = _interopRequireDefault(_component);
+
+var _closeButton = _dereq_('./close-button');
+
+var _closeButton2 = _interopRequireDefault(_closeButton);
+
+var MODAL_CLASS_NAME = 'vjs-modal-dialog';
+var ESC = 27;
+
+/**
+ * The `ModalDialog` displays over the video and its controls, which blocks
+ * interaction with the player until it is closed.
+ *
+ * Modal dialogs include a "Close" button and will close when that button
+ * is activated - or when ESC is pressed anywhere.
+ *
+ * @extends Component
+ * @class ModalDialog
+ */
+
+var ModalDialog = (function (_Component) {
+  _inherits(ModalDialog, _Component);
+
+  /**
+   * Constructor for modals.
+   *
+   * @param  {Player} player
+   * @param  {Object} [options]
+   * @param  {Mixed} [options.content=undefined]
+   *         Provide customized content for this modal.
+   *
+   * @param  {String} [options.description]
+   *         A text description for the modal, primarily for accessibility.
+   *
+   * @param  {Boolean} [options.fillAlways=false]
+   *         Normally, modals are automatically filled only the first time
+   *         they open. This tells the modal to refresh its content
+   *         every time it opens.
+   *
+   * @param  {String} [options.label]
+   *         A text label for the modal, primarily for accessibility.
+   *
+   * @param  {Boolean} [options.temporary=true]
+   *         If `true`, the modal can only be opened once; it will be
+   *         disposed as soon as it's closed.
+   *
+   * @param  {Boolean} [options.uncloseable=false]
+   *         If `true`, the user will not be able to close the modal
+   *         through the UI in the normal ways. Programmatic closing is
+   *         still possible.
+   *
+   */
+
+  function ModalDialog(player, options) {
+    _classCallCheck(this, ModalDialog);
+
+    _Component.call(this, player, options);
+    this.opened_ = this.hasBeenOpened_ = this.hasBeenFilled_ = false;
+
+    this.closeable(!this.options_.uncloseable);
+    this.content(this.options_.content);
+
+    // Make sure the contentEl is defined AFTER any children are initialized
+    // because we only want the contents of the modal in the contentEl
+    // (not the UI elements like the close button).
+    this.contentEl_ = Dom.createEl('div', {
+      className: MODAL_CLASS_NAME + '-content'
+    }, {
+      role: 'document'
+    });
+
+    this.descEl_ = Dom.createEl('p', {
+      className: MODAL_CLASS_NAME + '-description vjs-offscreen',
+      id: this.el().getAttribute('aria-describedby')
+    });
+
+    Dom.textContent(this.descEl_, this.description());
+    this.el_.appendChild(this.descEl_);
+    this.el_.appendChild(this.contentEl_);
+  }
+
+  /*
+   * Modal dialog default options.
+   *
+   * @type {Object}
+   * @private
+   */
+
+  /**
+   * Create the modal's DOM element
+   *
+   * @method createEl
+   * @return {Element}
+   */
+
+  ModalDialog.prototype.createEl = function createEl() {
+    return _Component.prototype.createEl.call(this, 'div', {
+      className: this.buildCSSClass(),
+      tabIndex: -1
+    }, {
+      'aria-describedby': this.id() + '_description',
+      'aria-hidden': 'true',
+      'aria-label': this.label(),
+      role: 'dialog'
+    });
+  };
+
+  /**
+   * Build the modal's CSS class.
+   *
+   * @method buildCSSClass
+   * @return {String}
+   */
+
+  ModalDialog.prototype.buildCSSClass = function buildCSSClass() {
+    return MODAL_CLASS_NAME + ' vjs-hidden ' + _Component.prototype.buildCSSClass.call(this);
+  };
+
+  /**
+   * Handles key presses on the document, looking for ESC, which closes
+   * the modal.
+   *
+   * @method handleKeyPress
+   * @param  {Event} e
+   */
+
+  ModalDialog.prototype.handleKeyPress = function handleKeyPress(e) {
+    if (e.which === ESC && this.closeable()) {
+      this.close();
+    }
+  };
+
+  /**
+   * Returns the label string for this modal. Primarily used for accessibility.
+   *
+   * @return {String}
+   */
+
+  ModalDialog.prototype.label = function label() {
+    return this.options_.label || this.localize('Modal Window');
+  };
+
+  /**
+   * Returns the description string for this modal. Primarily used for
+   * accessibility.
+   *
+   * @return {String}
+   */
+
+  ModalDialog.prototype.description = function description() {
+    var desc = this.options_.description || this.localize('This is a modal window.');
+
+    // Append a universal closeability message if the modal is closeable.
+    if (this.closeable()) {
+      desc += ' ' + this.localize('This modal can be closed by pressing the Escape key or activating the close button.');
+    }
+
+    return desc;
+  };
+
+  /**
+   * Opens the modal.
+   *
+   * @method open
+   * @return {ModalDialog}
+   */
+
+  ModalDialog.prototype.open = function open() {
+    if (!this.opened_) {
+      var player = this.player();
+
+      this.trigger('beforemodalopen');
+      this.opened_ = true;
+
+      // Fill content if the modal has never opened before and
+      // never been filled.
+      if (this.options_.fillAlways || !this.hasBeenOpened_ && !this.hasBeenFilled_) {
+        this.fill();
+      }
+
+      // If the player was playing, pause it and take note of its previously
+      // playing state.
+      this.wasPlaying_ = !player.paused();
+
+      if (this.wasPlaying_) {
+        player.pause();
+      }
+
+      if (this.closeable()) {
+        this.on(_globalDocument2['default'], 'keydown', Fn.bind(this, this.handleKeyPress));
+      }
+
+      player.controls(false);
+      this.show();
+      this.el().setAttribute('aria-hidden', 'false');
+      this.trigger('modalopen');
+      this.hasBeenOpened_ = true;
+    }
+    return this;
+  };
+
+  /**
+   * Whether or not the modal is opened currently.
+   *
+   * @method opened
+   * @param  {Boolean} [value]
+   *         If given, it will open (`true`) or close (`false`) the modal.
+   *
+   * @return {Boolean}
+   */
+
+  ModalDialog.prototype.opened = function opened(value) {
+    if (typeof value === 'boolean') {
+      this[value ? 'open' : 'close']();
+    }
+    return this.opened_;
+  };
+
+  /**
+   * Closes the modal.
+   *
+   * @method close
+   * @return {ModalDialog}
+   */
+
+  ModalDialog.prototype.close = function close() {
+    if (this.opened_) {
+      var player = this.player();
+
+      this.trigger('beforemodalclose');
+      this.opened_ = false;
+
+      if (this.wasPlaying_) {
+        player.play();
+      }
+
+      if (this.closeable()) {
+        this.off(_globalDocument2['default'], 'keydown', Fn.bind(this, this.handleKeyPress));
+      }
+
+      player.controls(true);
+      this.hide();
+      this.el().setAttribute('aria-hidden', 'true');
+      this.trigger('modalclose');
+
+      if (this.options_.temporary) {
+        this.dispose();
+      }
+    }
+    return this;
+  };
+
+  /**
+   * Whether or not the modal is closeable via the UI.
+   *
+   * @method closeable
+   * @param  {Boolean} [value]
+   *         If given as a Boolean, it will set the `closeable` option.
+   *
+   * @return {Boolean}
+   */
+
+  ModalDialog.prototype.closeable = function closeable(value) {
+    if (typeof value === 'boolean') {
+      var closeable = this.closeable_ = !!value;
+      var _close = this.getChild('closeButton');
+
+      // If this is being made closeable and has no close button, add one.
+      if (closeable && !_close) {
+
+        // The close button should be a child of the modal - not its
+        // content element, so temporarily change the content element.
+        var temp = this.contentEl_;
+        this.contentEl_ = this.el_;
+        _close = this.addChild('closeButton');
+        this.contentEl_ = temp;
+        this.on(_close, 'close', this.close);
+      }
+
+      // If this is being made uncloseable and has a close button, remove it.
+      if (!closeable && _close) {
+        this.off(_close, 'close', this.close);
+        this.removeChild(_close);
+        _close.dispose();
+      }
+    }
+    return this.closeable_;
+  };
+
+  /**
+   * Fill the modal's content element with the modal's "content" option.
+   *
+   * The content element will be emptied before this change takes place.
+   *
+   * @method fill
+   * @return {ModalDialog}
+   */
+
+  ModalDialog.prototype.fill = function fill() {
+    return this.fillWith(this.content());
+  };
+
+  /**
+   * Fill the modal's content element with arbitrary content.
+   *
+   * The content element will be emptied before this change takes place.
+   *
+   * @method fillWith
+   * @param  {Mixed} [content]
+   *         The same rules apply to this as apply to the `content` option.
+   *
+   * @return {ModalDialog}
+   */
+
+  ModalDialog.prototype.fillWith = function fillWith(content) {
+    var contentEl = this.contentEl();
+    var parentEl = contentEl.parentNode;
+    var nextSiblingEl = contentEl.nextSibling;
+
+    this.trigger('beforemodalfill');
+    this.hasBeenFilled_ = true;
+
+    // Detach the content element from the DOM before performing
+    // manipulation to avoid modifying the live DOM multiple times.
+    parentEl.removeChild(contentEl);
+    this.empty();
+    Dom.insertContent(contentEl, content);
+    this.trigger('modalfill');
+
+    // Re-inject the re-filled content element.
+    if (nextSiblingEl) {
+      parentEl.insertBefore(contentEl, nextSiblingEl);
+    } else {
+      parentEl.appendChild(contentEl);
+    }
+
+    return this;
+  };
+
+  /**
+   * Empties the content element.
+   *
+   * This happens automatically anytime the modal is filled.
+   *
+   * @method empty
+   * @return {ModalDialog}
+   */
+
+  ModalDialog.prototype.empty = function empty() {
+    this.trigger('beforemodalempty');
+    Dom.emptyEl(this.contentEl());
+    this.trigger('modalempty');
+    return this;
+  };
+
+  /**
+   * Gets or sets the modal content, which gets normalized before being
+   * rendered into the DOM.
+   *
+   * This does not update the DOM or fill the modal, but it is called during
+   * that process.
+   *
+   * @method content
+   * @param  {Mixed} [value]
+   *         If defined, sets the internal content value to be used on the
+   *         next call(s) to `fill`. This value is normalized before being
+   *         inserted. To "clear" the internal content value, pass `null`.
+   *
+   * @return {Mixed}
+   */
+
+  ModalDialog.prototype.content = function content(value) {
+    if (typeof value !== 'undefined') {
+      this.content_ = value;
+    }
+    return this.content_;
+  };
+
+  return ModalDialog;
+})(_component2['default']);
+
+ModalDialog.prototype.options_ = {
+  temporary: true
+};
+
+_component2['default'].registerComponent('ModalDialog', ModalDialog);
+exports['default'] = ModalDialog;
+module.exports = exports['default'];
+
+},{"./close-button":64,"./component":65,"./utils/dom":126,"./utils/fn":128,"./utils/log":131,"global/document":1}],106:[function(_dereq_,module,exports){
 /**
  * @file player.js
  */
@@ -8334,7 +8966,15 @@ var _tracksTextTrackSettingsJs = _dereq_('./tracks/text-track-settings.js');
 
 var _tracksTextTrackSettingsJs2 = _interopRequireDefault(_tracksTextTrackSettingsJs);
 
+var _modalDialog = _dereq_('./modal-dialog');
+
+var _modalDialog2 = _interopRequireDefault(_modalDialog);
+
 // Require html5 tech, at least for disposing the original video tag
+
+var _techTechJs = _dereq_('./tech/tech.js');
+
+var _techTechJs2 = _interopRequireDefault(_techTechJs);
 
 var _techHtml5Js = _dereq_('./tech/html5.js');
 
@@ -8604,8 +9244,8 @@ var Player = (function (_Component) {
     // of the player in a way that's still overrideable by CSS, just like the
     // video element
     this.styleEl_ = stylesheet.createStyleElement('vjs-styles-dimensions');
-    var defaultsStyleEl = _globalDocument2['default'].querySelector('.vjs-styles-defaults');
-    var head = _globalDocument2['default'].querySelector('head');
+    var defaultsStyleEl = Dom.$('.vjs-styles-defaults');
+    var head = Dom.$('head');
     head.insertBefore(this.styleEl_, defaultsStyleEl ? defaultsStyleEl.nextSibling : head.firstChild);
 
     // Pass in the width/height/aspectRatio options which will update the style el
@@ -8744,6 +9384,7 @@ var Player = (function (_Component) {
     var width = undefined;
     var height = undefined;
     var aspectRatio = undefined;
+    var idClass = undefined;
 
     // The aspect ratio is either used directly or to calculate width and height.
     if (this.aspectRatio_ !== undefined && this.aspectRatio_ !== 'auto') {
@@ -8780,7 +9421,12 @@ var Player = (function (_Component) {
       height = width * ratioMultiplier;
     }
 
-    var idClass = this.id() + '-dimensions';
+    // Ensure the CSS class is valid by starting with an alpha character
+    if (/^[^a-zA-Z]/.test(this.id())) {
+      idClass = 'dimensions-' + this.id();
+    } else {
+      idClass = this.id() + '-dimensions';
+    }
 
     // Ensure the right class is still on the player for the style element
     this.addClass(idClass);
@@ -8808,7 +9454,7 @@ var Player = (function (_Component) {
 
     // get rid of the HTML5 video tag as soon as we are using another tech
     if (techName !== 'Html5' && this.tag) {
-      _componentJs2['default'].getComponent('Html5').disposeMediaElement(this.tag);
+      _techTechJs2['default'].getTech('Html5').disposeMediaElement(this.tag);
       this.tag.player = null;
       this.tag = null;
     }
@@ -8848,7 +9494,12 @@ var Player = (function (_Component) {
     }
 
     // Initialize tech instance
-    var techComponent = _componentJs2['default'].getComponent(techName);
+    var techComponent = _techTechJs2['default'].getTech(techName);
+    // Support old behavior of techs being registered as components.
+    // Remove once that deprecated behavior is removed.
+    if (!techComponent) {
+      techComponent = _componentJs2['default'].getComponent(techName);
+    }
     this.tech_ = new techComponent(techOptions);
 
     // player.triggerReady is always async, so don't need this to be async
@@ -8914,7 +9565,7 @@ var Player = (function (_Component) {
   Player.prototype.unloadTech_ = function unloadTech_() {
     // Save the current text tracks so that we can reuse the same text tracks with the next tech
     this.textTracks_ = this.textTracks();
-    this.textTracksJson_ = _tracksTextTrackListConverterJs2['default'].textTracksToJson(this);
+    this.textTracksJson_ = _tracksTextTrackListConverterJs2['default'].textTracksToJson(this.tech_);
 
     this.isReady_ = false;
 
@@ -10020,6 +10671,47 @@ var Player = (function (_Component) {
   };
 
   /**
+   * Check whether the player can play a given mimetype
+   *
+   * @param {String} type The mimetype to check
+   * @return {String} 'probably', 'maybe', or '' (empty string)
+   * @method canPlayType
+   */
+
+  Player.prototype.canPlayType = function canPlayType(type) {
+    var can = undefined;
+
+    // Loop through each playback technology in the options order
+    for (var i = 0, j = this.options_.techOrder; i < j.length; i++) {
+      var techName = _utilsToTitleCaseJs2['default'](j[i]);
+      var tech = _techTechJs2['default'].getTech(techName);
+
+      // Support old behavior of techs being registered as components.
+      // Remove once that deprecated behavior is removed.
+      if (!tech) {
+        tech = _componentJs2['default'].getComponent(techName);
+      }
+
+      // Check if the current tech is defined before continuing
+      if (!tech) {
+        _utilsLogJs2['default'].error('The "' + techName + '" tech is undefined. Skipped browser support check for that tech.');
+        continue;
+      }
+
+      // Check if the browser supports this technology
+      if (tech.isSupported()) {
+        can = tech.canPlayType(type);
+
+        if (can) {
+          return can;
+        }
+      }
+    }
+
+    return '';
+  };
+
+  /**
    * Select source based on tech order
    *
    * @param {Array} sources The sources for a media asset
@@ -10031,8 +10723,12 @@ var Player = (function (_Component) {
     // Loop through each playback technology in the options order
     for (var i = 0, j = this.options_.techOrder; i < j.length; i++) {
       var techName = _utilsToTitleCaseJs2['default'](j[i]);
-      var tech = _componentJs2['default'].getComponent(techName);
-
+      var tech = _techTechJs2['default'].getTech(techName);
+      // Support old behavior of techs being registered as components.
+      // Remove once that deprecated behavior is removed.
+      if (!tech) {
+        tech = _componentJs2['default'].getComponent(techName);
+      }
       // Check if the current tech is defined before continuing
       if (!tech) {
         _utilsLogJs2['default'].error('The "' + techName + '" tech is undefined. Skipped browser support check for that tech.');
@@ -10094,7 +10790,12 @@ var Player = (function (_Component) {
       return this.techGet_('src');
     }
 
-    var currentTech = _componentJs2['default'].getComponent(this.techName_);
+    var currentTech = _techTechJs2['default'].getTech(this.techName_);
+    // Support old behavior of techs being registered as components.
+    // Remove once that deprecated behavior is removed.
+    if (!currentTech) {
+      currentTech = _componentJs2['default'].getComponent(this.techName_);
+    }
 
     // case: Array of source objects to choose from and pick the best to play
     if (Array.isArray(source)) {
@@ -10902,6 +11603,39 @@ var Player = (function (_Component) {
   };
 
   /**
+   * Creates a simple modal dialog (an instance of the `ModalDialog`
+   * component) that immediately overlays the player with arbitrary
+   * content and removes itself when closed.
+   *
+   * @param {String|Function|Element|Array|Null} content
+   *        Same as `ModalDialog#content`'s param of the same name.
+   *
+   *        The most straight-forward usage is to provide a string or DOM
+   *        element.
+   *
+   * @param {Object} [options]
+   *        Extra options which will be passed on to the `ModalDialog`.
+   *
+   * @return {ModalDialog}
+   */
+
+  Player.prototype.createModal = function createModal(content, options) {
+    var player = this;
+
+    options = options || {};
+    options.content = content || '';
+
+    var modal = new _modalDialog2['default'](player, options);
+
+    player.addChild(modal);
+    modal.on('dispose', function () {
+      player.removeChild(modal);
+    });
+
+    return modal.open();
+  };
+
+  /**
    * Gets tag settings
    *
    * @param {Element} tag The player tag
@@ -11038,6 +11772,13 @@ Player.prototype.handleUserInactive_;
 Player.prototype.handleTimeUpdate_;
 
 /**
+ * Fired when video playback ends
+ *
+ * @event ended
+ */
+Player.prototype.handleTechEnded_;
+
+/**
  * Fired when the volume changes
  *
  * @event volumechange
@@ -11064,7 +11805,7 @@ exports['default'] = Player;
 module.exports = exports['default'];
 // If empty string, make it a parsable json object.
 
-},{"./big-play-button.js":61,"./component.js":63,"./control-bar/control-bar.js":64,"./error-display.js":94,"./fullscreen-api.js":97,"./loading-spinner.js":98,"./media-error.js":99,"./poster-image.js":105,"./tech/html5.js":110,"./tech/loader.js":111,"./tracks/text-track-display.js":114,"./tracks/text-track-list-converter.js":116,"./tracks/text-track-settings.js":118,"./utils/browser.js":120,"./utils/buffer.js":121,"./utils/dom.js":123,"./utils/events.js":124,"./utils/fn.js":125,"./utils/guid.js":127,"./utils/log.js":128,"./utils/merge-options.js":129,"./utils/stylesheet.js":130,"./utils/time-ranges.js":131,"./utils/to-title-case.js":132,"global/document":1,"global/window":2,"object.assign":45,"safe-json-parse/tuple":53}],104:[function(_dereq_,module,exports){
+},{"./big-play-button.js":62,"./component.js":65,"./control-bar/control-bar.js":66,"./error-display.js":96,"./fullscreen-api.js":99,"./loading-spinner.js":100,"./media-error.js":101,"./modal-dialog":105,"./poster-image.js":108,"./tech/html5.js":113,"./tech/loader.js":114,"./tech/tech.js":115,"./tracks/text-track-display.js":117,"./tracks/text-track-list-converter.js":119,"./tracks/text-track-settings.js":121,"./utils/browser.js":123,"./utils/buffer.js":124,"./utils/dom.js":126,"./utils/events.js":127,"./utils/fn.js":128,"./utils/guid.js":130,"./utils/log.js":131,"./utils/merge-options.js":132,"./utils/stylesheet.js":133,"./utils/time-ranges.js":134,"./utils/to-title-case.js":135,"global/document":1,"global/window":2,"object.assign":45,"safe-json-parse/tuple":53}],107:[function(_dereq_,module,exports){
 /**
  * @file plugins.js
  */
@@ -11092,7 +11833,7 @@ var plugin = function plugin(name, init) {
 exports['default'] = plugin;
 module.exports = exports['default'];
 
-},{"./player.js":103}],105:[function(_dereq_,module,exports){
+},{"./player.js":106}],108:[function(_dereq_,module,exports){
 /**
  * @file poster-image.js
  */
@@ -11252,7 +11993,7 @@ _componentJs2['default'].registerComponent('PosterImage', PosterImage);
 exports['default'] = PosterImage;
 module.exports = exports['default'];
 
-},{"./button.js":62,"./component.js":63,"./utils/browser.js":120,"./utils/dom.js":123,"./utils/fn.js":125}],106:[function(_dereq_,module,exports){
+},{"./button.js":63,"./component.js":65,"./utils/browser.js":123,"./utils/dom.js":126,"./utils/fn.js":128}],109:[function(_dereq_,module,exports){
 /**
  * @file setup.js
  *
@@ -11362,7 +12103,7 @@ exports.autoSetup = autoSetup;
 exports.autoSetupTimeout = autoSetupTimeout;
 exports.hasLoaded = hasLoaded;
 
-},{"./utils/events.js":124,"global/document":1,"global/window":2}],107:[function(_dereq_,module,exports){
+},{"./utils/events.js":127,"global/document":1,"global/window":2}],110:[function(_dereq_,module,exports){
 /**
  * @file slider.js
  */
@@ -11641,7 +12382,7 @@ _componentJs2['default'].registerComponent('Slider', Slider);
 exports['default'] = Slider;
 module.exports = exports['default'];
 
-},{"../component.js":63,"../utils/dom.js":123,"global/document":1,"object.assign":45}],108:[function(_dereq_,module,exports){
+},{"../component.js":65,"../utils/dom.js":126,"global/document":1,"object.assign":45}],111:[function(_dereq_,module,exports){
 /**
  * @file flash-rtmp.js
  */
@@ -11669,7 +12410,7 @@ function FlashRtmpDecorator(Flash) {
     // Look for the normal URL separator we expect, '&'.
     // If found, we split the URL into two pieces around the
     // first '&'.
-    var connEnd = src.indexOf('&');
+    var connEnd = src.search(/&(?!\w+=)/);
     var streamBegin = undefined;
     if (connEnd !== -1) {
       streamBegin = connEnd + 1;
@@ -11706,12 +12447,31 @@ function FlashRtmpDecorator(Flash) {
   Flash.rtmpSourceHandler = {};
 
   /**
-   * Check Flash can handle the source natively
+   * Check if Flash can play the given videotype
+   * @param  {String} type    The mimetype to check
+   * @return {String}         'probably', 'maybe', or '' (empty string)
+   */
+  Flash.rtmpSourceHandler.canPlayType = function (type) {
+    if (Flash.isStreamingType(type)) {
+      return 'maybe';
+    }
+
+    return '';
+  };
+
+  /**
+   * Check if Flash can handle the source natively
    * @param  {Object} source  The source object
    * @return {String}         'probably', 'maybe', or '' (empty string)
    */
   Flash.rtmpSourceHandler.canHandleSource = function (source) {
-    if (Flash.isStreamingType(source.type) || Flash.isStreamingSrc(source.src)) {
+    var can = Flash.rtmpSourceHandler.canPlayType(source.type);
+
+    if (can) {
+      return can;
+    }
+
+    if (Flash.isStreamingSrc(source.src)) {
       return 'maybe';
     }
 
@@ -11741,7 +12501,7 @@ function FlashRtmpDecorator(Flash) {
 exports['default'] = FlashRtmpDecorator;
 module.exports = exports['default'];
 
-},{}],109:[function(_dereq_,module,exports){
+},{}],112:[function(_dereq_,module,exports){
 /**
  * @file flash.js
  * VideoJS-SWF - Custom Flash Player with HTML5-ish API
@@ -11858,7 +12618,7 @@ var Flash = (function (_Tech) {
     // Otherwise this adds a CDN url.
     // The CDN also auto-adds a swf URL for that specific version.
     if (!options.swf) {
-      options.swf = '//vjs.zencdn.net/swf/5.0.0-rc1/video-js.swf';
+      options.swf = '//vjs.zencdn.net/swf/5.0.1/video-js.swf';
     }
 
     // Generate ID for swf object
@@ -12156,6 +12916,19 @@ _tech2['default'].withSourceHandlers(Flash);
  */
 Flash.nativeSourceHandler = {};
 
+/**
+ * Check if Flash can play the given videotype
+ * @param  {String} type    The mimetype to check
+ * @return {String}         'probably', 'maybe', or '' (empty string)
+ */
+Flash.nativeSourceHandler.canPlayType = function (type) {
+  if (type in Flash.formats) {
+    return 'maybe';
+  }
+
+  return '';
+};
+
 /*
  * Check Flash can handle the source natively
  *
@@ -12180,11 +12953,7 @@ Flash.nativeSourceHandler.canHandleSource = function (source) {
     type = source.type.replace(/;.*/, '').toLowerCase();
   }
 
-  if (type in Flash.formats) {
-    return 'maybe';
-  }
-
-  return '';
+  return Flash.nativeSourceHandler.canPlayType(type);
 };
 
 /*
@@ -12343,10 +13112,11 @@ Flash.getEmbedCode = function (swf, flashVars, params, attributes) {
 _flashRtmp2['default'](Flash);
 
 _component2['default'].registerComponent('Flash', Flash);
+_tech2['default'].registerTech('Flash', Flash);
 exports['default'] = Flash;
 module.exports = exports['default'];
 
-},{"../component":63,"../utils/dom.js":123,"../utils/time-ranges.js":131,"../utils/url.js":133,"./flash-rtmp":108,"./tech":112,"global/window":2,"object.assign":45}],110:[function(_dereq_,module,exports){
+},{"../component":65,"../utils/dom.js":126,"../utils/time-ranges.js":134,"../utils/url.js":136,"./flash-rtmp":111,"./tech":115,"global/window":2,"object.assign":45}],113:[function(_dereq_,module,exports){
 /**
  * @file html5.js
  * HTML5 Media Controller - Wrapper for HTML5 Media API
@@ -12950,7 +13720,11 @@ var Html5 = (function (_Tech) {
    */
 
   Html5.prototype.currentSrc = function currentSrc() {
-    return this.el_.currentSrc;
+    if (this.currentSource_) {
+      return this.currentSource_.src;
+    } else {
+      return this.el_.currentSrc;
+    }
   };
 
   /**
@@ -13302,7 +14076,7 @@ var Html5 = (function (_Tech) {
 
     this.remoteTextTracks().removeTrack_(track);
 
-    tracks = this.el().querySelectorAll('track');
+    tracks = this.$$('track');
 
     i = tracks.length;
     while (i--) {
@@ -13351,6 +14125,22 @@ _techJs2['default'].withSourceHandlers(Html5);
 Html5.nativeSourceHandler = {};
 
 /*
+ * Check if the video element can play the given videotype
+ *
+ * @param  {String} type    The mimetype to check
+ * @return {String}         'probably', 'maybe', or '' (empty string)
+ */
+Html5.nativeSourceHandler.canPlayType = function (type) {
+  // IE9 on Windows 7 without MediaPlayer throws an error here
+  // https://github.com/videojs/video.js/issues/519
+  try {
+    return Html5.TEST_VID.canPlayType(type);
+  } catch (e) {
+    return '';
+  }
+};
+
+/*
  * Check if the video element can handle the source natively
  *
  * @param  {Object} source  The source object
@@ -13359,24 +14149,14 @@ Html5.nativeSourceHandler = {};
 Html5.nativeSourceHandler.canHandleSource = function (source) {
   var match, ext;
 
-  function canPlayType(type) {
-    // IE9 on Windows 7 without MediaPlayer throws an error here
-    // https://github.com/videojs/video.js/issues/519
-    try {
-      return Html5.TEST_VID.canPlayType(type);
-    } catch (e) {
-      return '';
-    }
-  }
-
   // If a type was provided we should rely on that
   if (source.type) {
-    return canPlayType(source.type);
+    return Html5.nativeSourceHandler.canPlayType(source.type);
   } else if (source.src) {
     // If no type, fall back to checking 'video/[EXTENSION]'
     ext = Url.getFileExtension(source.src);
 
-    return canPlayType('video/' + ext);
+    return Html5.nativeSourceHandler.canPlayType('video/' + ext);
   }
 
   return '';
@@ -13582,10 +14362,11 @@ Html5.disposeMediaElement = function (el) {
 };
 
 _component2['default'].registerComponent('Html5', Html5);
+_techJs2['default'].registerTech('Html5', Html5);
 exports['default'] = Html5;
 module.exports = exports['default'];
 
-},{"../component":63,"../utils/browser.js":120,"../utils/dom.js":123,"../utils/fn.js":125,"../utils/log.js":128,"../utils/merge-options.js":129,"../utils/url.js":133,"./tech.js":112,"global/document":1,"global/window":2,"object.assign":45}],111:[function(_dereq_,module,exports){
+},{"../component":65,"../utils/browser.js":123,"../utils/dom.js":126,"../utils/fn.js":128,"../utils/log.js":131,"../utils/merge-options.js":132,"../utils/url.js":136,"./tech.js":115,"global/document":1,"global/window":2,"object.assign":45}],114:[function(_dereq_,module,exports){
 /**
  * @file loader.js
  */
@@ -13599,9 +14380,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var _component = _dereq_('../component');
+var _componentJs = _dereq_('../component.js');
 
-var _component2 = _interopRequireDefault(_component);
+var _componentJs2 = _interopRequireDefault(_componentJs);
+
+var _techJs = _dereq_('./tech.js');
+
+var _techJs2 = _interopRequireDefault(_techJs);
 
 var _globalWindow = _dereq_('global/window');
 
@@ -13636,7 +14421,12 @@ var MediaLoader = (function (_Component) {
     if (!options.playerOptions['sources'] || options.playerOptions['sources'].length === 0) {
       for (var i = 0, j = options.playerOptions['techOrder']; i < j.length; i++) {
         var techName = _utilsToTitleCaseJs2['default'](j[i]);
-        var tech = _component2['default'].getComponent(techName);
+        var tech = _techJs2['default'].getTech(techName);
+        // Support old behavior of techs being registered as components.
+        // Remove once that deprecated behavior is removed.
+        if (!techName) {
+          tech = _componentJs2['default'].getComponent(techName);
+        }
 
         // Check if the browser supports this technology
         if (tech && tech.isSupported()) {
@@ -13654,13 +14444,13 @@ var MediaLoader = (function (_Component) {
   }
 
   return MediaLoader;
-})(_component2['default']);
+})(_componentJs2['default']);
 
-_component2['default'].registerComponent('MediaLoader', MediaLoader);
+_componentJs2['default'].registerComponent('MediaLoader', MediaLoader);
 exports['default'] = MediaLoader;
 module.exports = exports['default'];
 
-},{"../component":63,"../utils/to-title-case.js":132,"global/window":2}],112:[function(_dereq_,module,exports){
+},{"../component.js":65,"../utils/to-title-case.js":135,"./tech.js":115,"global/window":2}],115:[function(_dereq_,module,exports){
 /**
  * @file tech.js
  * Media Technology Controller - Base class for media playback
@@ -14048,16 +14838,16 @@ var Tech = (function (_Component) {
    */
 
   Tech.prototype.emulateTextTracks = function emulateTextTracks() {
-    if (!_globalWindow2['default']['WebVTT'] && this.el().parentNode != null) {
-      var script = _globalDocument2['default'].createElement('script');
-      script.src = this.options_['vtt.js'] || '../node_modules/vtt.js/dist/vtt.js';
-      this.el().parentNode.appendChild(script);
-      _globalWindow2['default']['WebVTT'] = true;
-    }
-
     var tracks = this.textTracks();
     if (!tracks) {
       return;
+    }
+
+    if (!_globalWindow2['default']['WebVTT'] && this.el().parentNode != null) {
+      var script = _globalDocument2['default'].createElement('script');
+      script.src = this.options_['vtt.js'] || 'https://cdn.rawgit.com/gkatsev/vtt.js/vjs-v0.12.1/dist/vtt.min.js';
+      this.el().parentNode.appendChild(script);
+      _globalWindow2['default']['WebVTT'] = true;
     }
 
     var textTracksChanges = Fn.bind(this, function () {
@@ -14173,6 +14963,74 @@ var Tech = (function (_Component) {
 
   Tech.prototype.setPoster = function setPoster() {};
 
+  /*
+   * Check if the tech can support the given type
+   *
+   * The base tech does not support any type, but source handlers might
+   * overwrite this.
+   *
+   * @param  {String} type    The mimetype to check
+   * @return {String}         'probably', 'maybe', or '' (empty string)
+   */
+
+  Tech.prototype.canPlayType = function canPlayType() {
+    return '';
+  };
+
+  /*
+   * Return whether the argument is a Tech or not.
+   * Can be passed either a Class like `Html5` or a instance like `player.tech_`
+   * 
+   * @param {Object} component An item to check
+   * @return {Boolean}         Whether it is a tech or not
+   */
+
+  Tech.isTech = function isTech(component) {
+    return component.prototype instanceof Tech || component instanceof Tech || component === Tech;
+  };
+
+  /**
+   * Registers a Tech
+   *
+   * @param {String} name Name of the Tech to register
+   * @param {Object} tech The tech to register
+   * @static
+   * @method registerComponent
+   */
+
+  Tech.registerTech = function registerTech(name, tech) {
+    if (!Tech.techs_) {
+      Tech.techs_ = {};
+    }
+
+    if (!Tech.isTech(tech)) {
+      throw new Error('Tech ' + name + ' must be a Tech');
+    }
+
+    Tech.techs_[name] = tech;
+    return tech;
+  };
+
+  /**
+   * Gets a component by name
+   *
+   * @param {String} name Name of the component to get
+   * @return {Component}
+   * @static
+   * @method getComponent
+   */
+
+  Tech.getTech = function getTech(name) {
+    if (Tech.techs_ && Tech.techs_[name]) {
+      return Tech.techs_[name];
+    }
+
+    if (_globalWindow2['default'] && _globalWindow2['default'].videojs && _globalWindow2['default'].videojs[name]) {
+      _utilsLogJs2['default'].warn('The ' + name + ' tech was added to the videojs object when it should be registered using videojs.registerTech(name, tech)');
+      return _globalWindow2['default'].videojs[name];
+    }
+  };
+
   return Tech;
 })(_component2['default']);
 
@@ -14245,6 +15103,26 @@ Tech.withSourceHandlers = function (_Tech) {
   };
 
   /*
+   * Check if the tech can support the given type
+   * @param  {String} type    The mimetype to check
+   * @return {String}         'probably', 'maybe', or '' (empty string)
+   */
+  _Tech.canPlayType = function (type) {
+    var handlers = _Tech.sourceHandlers || [];
+    var can = undefined;
+
+    for (var i = 0; i < handlers.length; i++) {
+      can = handlers[i].canPlayType(type);
+
+      if (can) {
+        return can;
+      }
+    }
+
+    return '';
+  };
+
+  /*
    * Return the first source handler that supports the source
    * TODO: Answer question: should 'probably' be prioritized over 'maybe'
    * @param  {Object} source The source object
@@ -14281,16 +15159,26 @@ Tech.withSourceHandlers = function (_Tech) {
     return '';
   };
 
-  var originalSeekable = _Tech.prototype.seekable;
+  /*
+   * When using a source handler, prefer its implementation of
+   * any function normally provided by the tech.
+   */
+  var deferrable = ['seekable', 'duration'];
 
-  // when a source handler is registered, prefer its implementation of
-  // seekable when present.
-  _Tech.prototype.seekable = function () {
-    if (this.sourceHandler_ && this.sourceHandler_.seekable) {
-      return this.sourceHandler_.seekable();
+  deferrable.forEach(function (fnName) {
+    var originalFn = this[fnName];
+
+    if (typeof originalFn !== 'function') {
+      return;
     }
-    return originalSeekable.call(this);
-  };
+
+    this[fnName] = function () {
+      if (this.sourceHandler_ && this.sourceHandler_[fnName]) {
+        return this.sourceHandler_[fnName].apply(this.sourceHandler_, arguments);
+      }
+      return originalFn.apply(this, arguments);
+    };
+  }, _Tech.prototype);
 
   /*
    * Create a function for setting the source using a source object
@@ -14336,10 +15224,11 @@ Tech.withSourceHandlers = function (_Tech) {
 _component2['default'].registerComponent('Tech', Tech);
 // Old name for Tech
 _component2['default'].registerComponent('MediaTechController', Tech);
+Tech.registerTech('Tech', Tech);
 exports['default'] = Tech;
 module.exports = exports['default'];
 
-},{"../component":63,"../media-error.js":99,"../tracks/text-track":119,"../tracks/text-track-list":117,"../utils/buffer.js":121,"../utils/fn.js":125,"../utils/log.js":128,"../utils/time-ranges.js":131,"global/document":1,"global/window":2}],113:[function(_dereq_,module,exports){
+},{"../component":65,"../media-error.js":101,"../tracks/text-track":122,"../tracks/text-track-list":120,"../utils/buffer.js":124,"../utils/fn.js":128,"../utils/log.js":131,"../utils/time-ranges.js":134,"global/document":1,"global/window":2}],116:[function(_dereq_,module,exports){
 /**
  * @file text-track-cue-list.js
  */
@@ -14376,7 +15265,9 @@ var TextTrackCueList = function TextTrackCueList(cues) {
     list = _globalDocument2['default'].createElement('custom');
 
     for (var prop in TextTrackCueList.prototype) {
-      list[prop] = TextTrackCueList.prototype[prop];
+      if (prop !== 'constructor') {
+        list[prop] = TextTrackCueList.prototype[prop];
+      }
     }
   }
 
@@ -14436,7 +15327,7 @@ TextTrackCueList.prototype.getCueById = function (id) {
 exports['default'] = TextTrackCueList;
 module.exports = exports['default'];
 
-},{"../utils/browser.js":120,"global/document":1}],114:[function(_dereq_,module,exports){
+},{"../utils/browser.js":123,"global/document":1}],117:[function(_dereq_,module,exports){
 /**
  * @file text-track-display.js
  */
@@ -14707,7 +15598,7 @@ _component2['default'].registerComponent('TextTrackDisplay', TextTrackDisplay);
 exports['default'] = TextTrackDisplay;
 module.exports = exports['default'];
 
-},{"../component":63,"../menu/menu-button.js":100,"../menu/menu-item.js":101,"../menu/menu.js":102,"../utils/fn.js":125,"global/document":1,"global/window":2}],115:[function(_dereq_,module,exports){
+},{"../component":65,"../menu/menu-button.js":102,"../menu/menu-item.js":103,"../menu/menu.js":104,"../utils/fn.js":128,"global/document":1,"global/window":2}],118:[function(_dereq_,module,exports){
 /**
  * @file text-track-enums.js
  *
@@ -14740,7 +15631,7 @@ var TextTrackKind = {
 exports.TextTrackMode = TextTrackMode;
 exports.TextTrackKind = TextTrackKind;
 
-},{}],116:[function(_dereq_,module,exports){
+},{}],119:[function(_dereq_,module,exports){
 /**
  * Utilities for capturing text track state and re-creating tracks
  * based on a capture.
@@ -14759,13 +15650,13 @@ exports.TextTrackKind = TextTrackKind;
 
 exports.__esModule = true;
 var trackToJson_ = function trackToJson_(track) {
-  return {
-    kind: track.kind,
-    label: track.label,
-    language: track.language,
-    id: track.id,
-    inBandMetadataTrackDispatchType: track.inBandMetadataTrackDispatchType,
-    mode: track.mode,
+  var ret = ['kind', 'label', 'language', 'id', 'inBandMetadataTrackDispatchType', 'mode', 'src'].reduce(function (acc, prop, i) {
+    if (track[prop]) {
+      acc[prop] = track[prop];
+    }
+
+    return acc;
+  }, {
     cues: track.cues && Array.prototype.map.call(track.cues, function (cue) {
       return {
         startTime: cue.startTime,
@@ -14773,9 +15664,10 @@ var trackToJson_ = function trackToJson_(track) {
         text: cue.text,
         id: cue.id
       };
-    }),
-    src: track.src
-  };
+    })
+  });
+
+  return ret;
 };
 
 /**
@@ -14787,14 +15679,17 @@ var trackToJson_ = function trackToJson_(track) {
  * @function textTracksToJson
  */
 var textTracksToJson = function textTracksToJson(tech) {
-  var trackEls = tech.el().querySelectorAll('track');
+
+  var trackEls = tech.$$('track');
 
   var trackObjs = Array.prototype.map.call(trackEls, function (t) {
     return t.track;
   });
   var tracks = Array.prototype.map.call(trackEls, function (trackEl) {
     var json = trackToJson_(trackEl.track);
-    json.src = trackEl.src;
+    if (trackEl.src) {
+      json.src = trackEl.src;
+    }
     return json;
   });
 
@@ -14827,7 +15722,7 @@ var jsonToTextTracks = function jsonToTextTracks(json, tech) {
 exports['default'] = { textTracksToJson: textTracksToJson, jsonToTextTracks: jsonToTextTracks, trackToJson_: trackToJson_ };
 module.exports = exports['default'];
 
-},{}],117:[function(_dereq_,module,exports){
+},{}],120:[function(_dereq_,module,exports){
 /**
  * @file text-track-list.js
  */
@@ -14875,7 +15770,9 @@ var TextTrackList = function TextTrackList(tracks) {
     list = _globalDocument2['default'].createElement('custom');
 
     for (var prop in TextTrackList.prototype) {
-      list[prop] = TextTrackList.prototype[prop];
+      if (prop !== 'constructor') {
+        list[prop] = TextTrackList.prototype[prop];
+      }
     }
   }
 
@@ -14972,7 +15869,7 @@ TextTrackList.prototype.getTrackById = function (id) {
 exports['default'] = TextTrackList;
 module.exports = exports['default'];
 
-},{"../event-target":95,"../utils/browser.js":120,"../utils/fn.js":125,"global/document":1}],118:[function(_dereq_,module,exports){
+},{"../event-target":97,"../utils/browser.js":123,"../utils/fn.js":128,"global/document":1}],121:[function(_dereq_,module,exports){
 /**
  * @file text-track-settings.js
  */
@@ -15035,33 +15932,33 @@ var TextTrackSettings = (function (_Component) {
       this.options_.persistTextTrackSettings = this.options_.playerOptions.persistTextTrackSettings;
     }
 
-    Events.on(this.el().querySelector('.vjs-done-button'), 'click', Fn.bind(this, function () {
+    Events.on(this.$('.vjs-done-button'), 'click', Fn.bind(this, function () {
       this.saveSettings();
       this.hide();
     }));
 
-    Events.on(this.el().querySelector('.vjs-default-button'), 'click', Fn.bind(this, function () {
-      this.el().querySelector('.vjs-fg-color > select').selectedIndex = 0;
-      this.el().querySelector('.vjs-bg-color > select').selectedIndex = 0;
-      this.el().querySelector('.window-color > select').selectedIndex = 0;
-      this.el().querySelector('.vjs-text-opacity > select').selectedIndex = 0;
-      this.el().querySelector('.vjs-bg-opacity > select').selectedIndex = 0;
-      this.el().querySelector('.vjs-window-opacity > select').selectedIndex = 0;
-      this.el().querySelector('.vjs-edge-style select').selectedIndex = 0;
-      this.el().querySelector('.vjs-font-family select').selectedIndex = 0;
-      this.el().querySelector('.vjs-font-percent select').selectedIndex = 2;
+    Events.on(this.$('.vjs-default-button'), 'click', Fn.bind(this, function () {
+      this.$('.vjs-fg-color > select').selectedIndex = 0;
+      this.$('.vjs-bg-color > select').selectedIndex = 0;
+      this.$('.window-color > select').selectedIndex = 0;
+      this.$('.vjs-text-opacity > select').selectedIndex = 0;
+      this.$('.vjs-bg-opacity > select').selectedIndex = 0;
+      this.$('.vjs-window-opacity > select').selectedIndex = 0;
+      this.$('.vjs-edge-style select').selectedIndex = 0;
+      this.$('.vjs-font-family select').selectedIndex = 0;
+      this.$('.vjs-font-percent select').selectedIndex = 2;
       this.updateDisplay();
     }));
 
-    Events.on(this.el().querySelector('.vjs-fg-color > select'), 'change', Fn.bind(this, this.updateDisplay));
-    Events.on(this.el().querySelector('.vjs-bg-color > select'), 'change', Fn.bind(this, this.updateDisplay));
-    Events.on(this.el().querySelector('.window-color > select'), 'change', Fn.bind(this, this.updateDisplay));
-    Events.on(this.el().querySelector('.vjs-text-opacity > select'), 'change', Fn.bind(this, this.updateDisplay));
-    Events.on(this.el().querySelector('.vjs-bg-opacity > select'), 'change', Fn.bind(this, this.updateDisplay));
-    Events.on(this.el().querySelector('.vjs-window-opacity > select'), 'change', Fn.bind(this, this.updateDisplay));
-    Events.on(this.el().querySelector('.vjs-font-percent select'), 'change', Fn.bind(this, this.updateDisplay));
-    Events.on(this.el().querySelector('.vjs-edge-style select'), 'change', Fn.bind(this, this.updateDisplay));
-    Events.on(this.el().querySelector('.vjs-font-family select'), 'change', Fn.bind(this, this.updateDisplay));
+    Events.on(this.$('.vjs-fg-color > select'), 'change', Fn.bind(this, this.updateDisplay));
+    Events.on(this.$('.vjs-bg-color > select'), 'change', Fn.bind(this, this.updateDisplay));
+    Events.on(this.$('.window-color > select'), 'change', Fn.bind(this, this.updateDisplay));
+    Events.on(this.$('.vjs-text-opacity > select'), 'change', Fn.bind(this, this.updateDisplay));
+    Events.on(this.$('.vjs-bg-opacity > select'), 'change', Fn.bind(this, this.updateDisplay));
+    Events.on(this.$('.vjs-window-opacity > select'), 'change', Fn.bind(this, this.updateDisplay));
+    Events.on(this.$('.vjs-font-percent select'), 'change', Fn.bind(this, this.updateDisplay));
+    Events.on(this.$('.vjs-edge-style select'), 'change', Fn.bind(this, this.updateDisplay));
+    Events.on(this.$('.vjs-font-family select'), 'change', Fn.bind(this, this.updateDisplay));
 
     if (this.options_.persistTextTrackSettings) {
       this.restoreSettings();
@@ -15083,7 +15980,7 @@ var TextTrackSettings = (function (_Component) {
   };
 
   /**
-   * Get texttrack settings 
+   * Get texttrack settings
    * Settings are
    * .vjs-edge-style
    * .vjs-font-family
@@ -15092,24 +15989,22 @@ var TextTrackSettings = (function (_Component) {
    * .vjs-bg-color
    * .vjs-bg-opacity
    * .window-color
-   * .vjs-window-opacity 
+   * .vjs-window-opacity
    *
-   * @return {Object} 
+   * @return {Object}
    * @method getValues
    */
 
   TextTrackSettings.prototype.getValues = function getValues() {
-    var el = this.el();
-
-    var textEdge = getSelectedOptionValue(el.querySelector('.vjs-edge-style select'));
-    var fontFamily = getSelectedOptionValue(el.querySelector('.vjs-font-family select'));
-    var fgColor = getSelectedOptionValue(el.querySelector('.vjs-fg-color > select'));
-    var textOpacity = getSelectedOptionValue(el.querySelector('.vjs-text-opacity > select'));
-    var bgColor = getSelectedOptionValue(el.querySelector('.vjs-bg-color > select'));
-    var bgOpacity = getSelectedOptionValue(el.querySelector('.vjs-bg-opacity > select'));
-    var windowColor = getSelectedOptionValue(el.querySelector('.window-color > select'));
-    var windowOpacity = getSelectedOptionValue(el.querySelector('.vjs-window-opacity > select'));
-    var fontPercent = _globalWindow2['default']['parseFloat'](getSelectedOptionValue(el.querySelector('.vjs-font-percent > select')));
+    var textEdge = getSelectedOptionValue(this.$('.vjs-edge-style select'));
+    var fontFamily = getSelectedOptionValue(this.$('.vjs-font-family select'));
+    var fgColor = getSelectedOptionValue(this.$('.vjs-fg-color > select'));
+    var textOpacity = getSelectedOptionValue(this.$('.vjs-text-opacity > select'));
+    var bgColor = getSelectedOptionValue(this.$('.vjs-bg-color > select'));
+    var bgOpacity = getSelectedOptionValue(this.$('.vjs-bg-opacity > select'));
+    var windowColor = getSelectedOptionValue(this.$('.window-color > select'));
+    var windowOpacity = getSelectedOptionValue(this.$('.vjs-window-opacity > select'));
+    var fontPercent = _globalWindow2['default']['parseFloat'](getSelectedOptionValue(this.$('.vjs-font-percent > select')));
 
     var result = {
       'backgroundOpacity': bgOpacity,
@@ -15131,7 +16026,7 @@ var TextTrackSettings = (function (_Component) {
   };
 
   /**
-   * Set texttrack settings 
+   * Set texttrack settings
    * Settings are
    * .vjs-edge-style
    * .vjs-font-family
@@ -15140,23 +16035,21 @@ var TextTrackSettings = (function (_Component) {
    * .vjs-bg-color
    * .vjs-bg-opacity
    * .window-color
-   * .vjs-window-opacity 
+   * .vjs-window-opacity
    *
    * @param {Object} values Object with texttrack setting values
    * @method setValues
    */
 
   TextTrackSettings.prototype.setValues = function setValues(values) {
-    var el = this.el();
-
-    setSelectedOption(el.querySelector('.vjs-edge-style select'), values.edgeStyle);
-    setSelectedOption(el.querySelector('.vjs-font-family select'), values.fontFamily);
-    setSelectedOption(el.querySelector('.vjs-fg-color > select'), values.color);
-    setSelectedOption(el.querySelector('.vjs-text-opacity > select'), values.textOpacity);
-    setSelectedOption(el.querySelector('.vjs-bg-color > select'), values.backgroundColor);
-    setSelectedOption(el.querySelector('.vjs-bg-opacity > select'), values.backgroundOpacity);
-    setSelectedOption(el.querySelector('.window-color > select'), values.windowColor);
-    setSelectedOption(el.querySelector('.vjs-window-opacity > select'), values.windowOpacity);
+    setSelectedOption(this.$('.vjs-edge-style select'), values.edgeStyle);
+    setSelectedOption(this.$('.vjs-font-family select'), values.fontFamily);
+    setSelectedOption(this.$('.vjs-fg-color > select'), values.color);
+    setSelectedOption(this.$('.vjs-text-opacity > select'), values.textOpacity);
+    setSelectedOption(this.$('.vjs-bg-color > select'), values.backgroundColor);
+    setSelectedOption(this.$('.vjs-bg-opacity > select'), values.backgroundOpacity);
+    setSelectedOption(this.$('.window-color > select'), values.windowColor);
+    setSelectedOption(this.$('.vjs-window-opacity > select'), values.windowOpacity);
 
     var fontPercent = values.fontPercent;
 
@@ -15164,11 +16057,11 @@ var TextTrackSettings = (function (_Component) {
       fontPercent = fontPercent.toFixed(2);
     }
 
-    setSelectedOption(el.querySelector('.vjs-font-percent > select'), fontPercent);
+    setSelectedOption(this.$('.vjs-font-percent > select'), fontPercent);
   };
 
   /**
-   * Restore texttrack settings 
+   * Restore texttrack settings
    *
    * @method restoreSettings
    */
@@ -15189,7 +16082,7 @@ var TextTrackSettings = (function (_Component) {
   };
 
   /**
-   * Save texttrack settings to local storage 
+   * Save texttrack settings to local storage
    *
    * @method saveSettings
    */
@@ -15210,7 +16103,7 @@ var TextTrackSettings = (function (_Component) {
   };
 
   /**
-   * Update display of texttrack settings  
+   * Update display of texttrack settings
    *
    * @method updateDisplay
    */
@@ -15264,7 +16157,7 @@ function captionOptionsMenuTemplate() {
 exports['default'] = TextTrackSettings;
 module.exports = exports['default'];
 
-},{"../component":63,"../utils/events.js":124,"../utils/fn.js":125,"../utils/log.js":128,"global/window":2,"safe-json-parse/tuple":53}],119:[function(_dereq_,module,exports){
+},{"../component":65,"../utils/events.js":127,"../utils/fn.js":128,"../utils/log.js":131,"global/window":2,"safe-json-parse/tuple":53}],122:[function(_dereq_,module,exports){
 /**
  * @file text-track.js
  */
@@ -15617,7 +16510,7 @@ var indexOf = function indexOf(searchElement, fromIndex) {
 exports['default'] = TextTrack;
 module.exports = exports['default'];
 
-},{"../event-target":95,"../utils/browser.js":120,"../utils/fn.js":125,"../utils/guid.js":127,"../utils/log.js":128,"../utils/url.js":133,"./text-track-cue-list":113,"./text-track-enums":115,"global/document":1,"global/window":2,"xhr":55}],120:[function(_dereq_,module,exports){
+},{"../event-target":97,"../utils/browser.js":123,"../utils/fn.js":128,"../utils/guid.js":130,"../utils/log.js":131,"../utils/url.js":136,"./text-track-cue-list":116,"./text-track-enums":118,"global/document":1,"global/window":2,"xhr":55}],123:[function(_dereq_,module,exports){
 /**
  * @file browser.js
  */
@@ -15706,7 +16599,7 @@ exports.TOUCH_ENABLED = TOUCH_ENABLED;
 var BACKGROUND_SIZE_SUPPORTED = ('backgroundSize' in _globalDocument2['default'].createElement('video').style);
 exports.BACKGROUND_SIZE_SUPPORTED = BACKGROUND_SIZE_SUPPORTED;
 
-},{"global/document":1,"global/window":2}],121:[function(_dereq_,module,exports){
+},{"global/document":1,"global/window":2}],124:[function(_dereq_,module,exports){
 /**
  * @file buffer.js
  */
@@ -15755,7 +16648,7 @@ function bufferedPercent(buffered, duration) {
   return bufferedDuration / duration;
 }
 
-},{"./time-ranges.js":131}],122:[function(_dereq_,module,exports){
+},{"./time-ranges.js":134}],125:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -15826,7 +16719,7 @@ exports['default'] = function (target) {
 
 module.exports = exports['default'];
 
-},{"./log.js":128}],123:[function(_dereq_,module,exports){
+},{"./log.js":131}],126:[function(_dereq_,module,exports){
 /**
  * @file dom.js
  */
@@ -15835,6 +16728,7 @@ module.exports = exports['default'];
 exports.__esModule = true;
 exports.getEl = getEl;
 exports.createEl = createEl;
+exports.textContent = textContent;
 exports.insertElFirst = insertElFirst;
 exports.getElData = getElData;
 exports.hasElData = hasElData;
@@ -15842,12 +16736,19 @@ exports.removeElData = removeElData;
 exports.hasElClass = hasElClass;
 exports.addElClass = addElClass;
 exports.removeElClass = removeElClass;
+exports.toggleElClass = toggleElClass;
 exports.setElAttributes = setElAttributes;
 exports.getElAttributes = getElAttributes;
 exports.blockTextSelection = blockTextSelection;
 exports.unblockTextSelection = unblockTextSelection;
 exports.findElPosition = findElPosition;
 exports.getPointerPosition = getPointerPosition;
+exports.isEl = isEl;
+exports.isTextNode = isTextNode;
+exports.emptyEl = emptyEl;
+exports.normalizeContent = normalizeContent;
+exports.appendContent = appendContent;
+exports.insertContent = insertContent;
 
 var _templateObject = _taggedTemplateLiteralLoose(['Setting attributes in the second argument of createEl()\n                has been deprecated. Use the third argument instead.\n                createEl(type, properties, attributes). Attempting to set ', ' to ', '.'], ['Setting attributes in the second argument of createEl()\n                has been deprecated. Use the third argument instead.\n                createEl(type, properties, attributes). Attempting to set ', ' to ', '.']);
 
@@ -15876,6 +16777,59 @@ var _logJs2 = _interopRequireDefault(_logJs);
 var _tsml = _dereq_('tsml');
 
 var _tsml2 = _interopRequireDefault(_tsml);
+
+/**
+ * Detect if a value is a string with any non-whitespace characters.
+ *
+ * @param  {String} str
+ * @return {Boolean}
+ */
+function isNonBlankString(str) {
+  return typeof str === 'string' && /\S/.test(str);
+}
+
+/**
+ * Throws an error if the passed string has whitespace. This is used by
+ * class methods to be relatively consistent with the classList API.
+ *
+ * @param  {String} str
+ * @return {Boolean}
+ */
+function throwIfWhitespace(str) {
+  if (/\s/.test(str)) {
+    throw new Error('class has illegal whitespace characters');
+  }
+}
+
+/**
+ * Produce a regular expression for matching a class name.
+ *
+ * @param  {String} className
+ * @return {RegExp}
+ */
+function classRegExp(className) {
+  return new RegExp('(^|\\s)' + className + '($|\\s)');
+}
+
+/**
+ * Creates functions to query the DOM using a given method.
+ *
+ * @function createQuerier
+ * @private
+ * @param  {String} method
+ * @return {Function}
+ */
+function createQuerier(method) {
+  return function (selector, context) {
+    if (!isNonBlankString(selector)) {
+      return _globalDocument2['default'][method](null);
+    }
+    if (isNonBlankString(context)) {
+      context = _globalDocument2['default'].querySelector(context);
+    }
+    return (isEl(context) ? context : _globalDocument2['default'])[method](selector);
+  };
+}
 
 /**
  * Shorthand for document.getElementById()
@@ -15930,6 +16884,23 @@ function createEl() {
   });
 
   return el;
+}
+
+/**
+ * Injects text into an element, replacing any existing contents entirely.
+ *
+ * @param  {Element} el
+ * @param  {String} text
+ * @return {Element}
+ * @function textContent
+ */
+
+function textContent(el, text) {
+  if (typeof el.textContent === 'undefined') {
+    el.innerText = text;
+  } else {
+    el.textContent = text;
+  }
 }
 
 /**
@@ -16043,52 +17014,103 @@ function removeElData(el) {
 /**
  * Check if an element has a CSS class
  *
+ * @function hasElClass
  * @param {Element} element Element to check
  * @param {String} classToCheck Classname to check
- * @function hasElClass
  */
 
 function hasElClass(element, classToCheck) {
-  return (' ' + element.className + ' ').indexOf(' ' + classToCheck + ' ') !== -1;
+  if (element.classList) {
+    return element.classList.contains(classToCheck);
+  } else {
+    throwIfWhitespace(classToCheck);
+    return classRegExp(classToCheck).test(element.className);
+  }
 }
 
 /**
  * Add a CSS class name to an element
  *
+ * @function addElClass
  * @param {Element} element    Element to add class name to
  * @param {String} classToAdd Classname to add
- * @function addElClass
  */
 
 function addElClass(element, classToAdd) {
-  if (!hasElClass(element, classToAdd)) {
-    element.className = element.className === '' ? classToAdd : element.className + ' ' + classToAdd;
-  }
+  if (element.classList) {
+    element.classList.add(classToAdd);
+
+    // Don't need to `throwIfWhitespace` here because `hasElClass` will do it
+    // in the case of classList not being supported.
+  } else if (!hasElClass(element, classToAdd)) {
+      element.className = (element.className + ' ' + classToAdd).trim();
+    }
+
+  return element;
 }
 
 /**
  * Remove a CSS class name from an element
  *
+ * @function removeElClass
  * @param {Element} element    Element to remove from class name
  * @param {String} classToRemove Classname to remove
- * @function removeElClass
  */
 
 function removeElClass(element, classToRemove) {
-  if (!hasElClass(element, classToRemove)) {
+  if (element.classList) {
+    element.classList.remove(classToRemove);
+  } else {
+    throwIfWhitespace(classToRemove);
+    element.className = element.className.split(/\s+/).filter(function (c) {
+      return c !== classToRemove;
+    }).join(' ');
+  }
+
+  return element;
+}
+
+/**
+ * Adds or removes a CSS class name on an element depending on an optional
+ * condition or the presence/absence of the class name.
+ *
+ * @function toggleElClass
+ * @param    {Element} element
+ * @param    {String} classToToggle
+ * @param    {Boolean|Function} [predicate]
+ *           Can be a function that returns a Boolean. If `true`, the class
+ *           will be added; if `false`, the class will be removed. If not
+ *           given, the class will be added if not present and vice versa.
+ */
+
+function toggleElClass(element, classToToggle, predicate) {
+
+  // This CANNOT use `classList` internally because IE does not support the
+  // second parameter to the `classList.toggle()` method! Which is fine because
+  // `classList` will be used by the add/remove functions.
+  var has = hasElClass(element, classToToggle);
+
+  if (typeof predicate === 'function') {
+    predicate = predicate(element, classToToggle);
+  }
+
+  if (typeof predicate !== 'boolean') {
+    predicate = !has;
+  }
+
+  // If the necessary class operation matches the current state of the
+  // element, no action is required.
+  if (predicate === has) {
     return;
   }
 
-  var classNames = element.className.split(' ');
-
-  // no arr.indexOf in ie8, and we don't want to add a big shim
-  for (var i = classNames.length - 1; i >= 0; i--) {
-    if (classNames[i] === classToRemove) {
-      classNames.splice(i, 1);
-    }
+  if (predicate) {
+    addElClass(element, classToToggle);
+  } else {
+    removeElClass(element, classToToggle);
   }
 
-  element.className = classNames.join(' ');
+  return element;
 }
 
 /**
@@ -16161,7 +17183,7 @@ function getElAttributes(tag) {
  * Attempt to block the ability to select text while dragging controls
  *
  * @return {Boolean}
- * @method blockTextSelection
+ * @function blockTextSelection
  */
 
 function blockTextSelection() {
@@ -16175,7 +17197,7 @@ function blockTextSelection() {
  * Turn off text selection blocking
  *
  * @return {Boolean}
- * @method unblockTextSelection
+ * @function unblockTextSelection
  */
 
 function unblockTextSelection() {
@@ -16189,9 +17211,9 @@ function unblockTextSelection() {
  * getBoundingClientRect technique from
  * John Resig http://ejohn.org/blog/getboundingclientrect-is-awesome/
  *
+ * @function findElPosition
  * @param {Element} el Element from which to get offset
- * @return {Object=}
- * @method findElPosition
+ * @return {Object}
  */
 
 function findElPosition(el) {
@@ -16231,10 +17253,10 @@ function findElPosition(el) {
  * Returns an object with x and y coordinates.
  * The base on the coordinates are the bottom left of the element.
  *
+ * @function getPointerPosition
  * @param {Element} el Element on which to get the pointer position on
  * @param {Event} event Event object
- * @return {Object=} position This object will have x and y coordinates corresponding to the mouse position
- * @metho getPointerPosition
+ * @return {Object} This object will have x and y coordinates corresponding to the mouse position
  */
 
 function getPointerPosition(el, event) {
@@ -16259,7 +17281,174 @@ function getPointerPosition(el, event) {
   return position;
 }
 
-},{"./guid.js":127,"./log.js":128,"global/document":1,"global/window":2,"tsml":54}],124:[function(_dereq_,module,exports){
+/**
+ * Determines, via duck typing, whether or not a value is a DOM element.
+ *
+ * @function isEl
+ * @param    {Mixed} value
+ * @return   {Boolean}
+ */
+
+function isEl(value) {
+  return !!value && typeof value === 'object' && value.nodeType === 1;
+}
+
+/**
+ * Determines, via duck typing, whether or not a value is a text node.
+ *
+ * @param  {Mixed} value
+ * @return {Boolean}
+ */
+
+function isTextNode(value) {
+  return !!value && typeof value === 'object' && value.nodeType === 3;
+}
+
+/**
+ * Empties the contents of an element.
+ *
+ * @function emptyEl
+ * @param    {Element} el
+ * @return   {Element}
+ */
+
+function emptyEl(el) {
+  while (el.firstChild) {
+    el.removeChild(el.firstChild);
+  }
+  return el;
+}
+
+/**
+ * Normalizes content for eventual insertion into the DOM.
+ *
+ * This allows a wide range of content definition methods, but protects
+ * from falling into the trap of simply writing to `innerHTML`, which is
+ * an XSS concern.
+ *
+ * The content for an element can be passed in multiple types and
+ * combinations, whose behavior is as follows:
+ *
+ * - String
+ *   Normalized into a text node.
+ *
+ * - Element, TextNode
+ *   Passed through.
+ *
+ * - Array
+ *   A one-dimensional array of strings, elements, nodes, or functions (which
+ *   return single strings, elements, or nodes).
+ *
+ * - Function
+ *   If the sole argument, is expected to produce a string, element,
+ *   node, or array.
+ *
+ * @function normalizeContent
+ * @param    {String|Element|TextNode|Array|Function} content
+ * @return   {Array}
+ */
+
+function normalizeContent(content) {
+
+  // First, invoke content if it is a function. If it produces an array,
+  // that needs to happen before normalization.
+  if (typeof content === 'function') {
+    content = content();
+  }
+
+  // Next up, normalize to an array, so one or many items can be normalized,
+  // filtered, and returned.
+  return (Array.isArray(content) ? content : [content]).map(function (value) {
+
+    // First, invoke value if it is a function to produce a new value,
+    // which will be subsequently normalized to a Node of some kind.
+    if (typeof value === 'function') {
+      value = value();
+    }
+
+    if (isEl(value) || isTextNode(value)) {
+      return value;
+    }
+
+    if (typeof value === 'string' && /\S/.test(value)) {
+      return _globalDocument2['default'].createTextNode(value);
+    }
+  }).filter(function (value) {
+    return value;
+  });
+}
+
+/**
+ * Normalizes and appends content to an element.
+ *
+ * @function appendContent
+ * @param    {Element} el
+ * @param    {String|Element|TextNode|Array|Function} content
+ *           See: `normalizeContent`
+ * @return   {Element}
+ */
+
+function appendContent(el, content) {
+  normalizeContent(content).forEach(function (node) {
+    return el.appendChild(node);
+  });
+  return el;
+}
+
+/**
+ * Normalizes and inserts content into an element; this is identical to
+ * `appendContent()`, except it empties the element first.
+ *
+ * @function insertContent
+ * @param    {Element} el
+ * @param    {String|Element|TextNode|Array|Function} content
+ *           See: `normalizeContent`
+ * @return   {Element}
+ */
+
+function insertContent(el, content) {
+  return appendContent(emptyEl(el), content);
+}
+
+/**
+ * Finds a single DOM element matching `selector` within the optional
+ * `context` of another DOM element (defaulting to `document`).
+ *
+ * @function $
+ * @param    {String} selector
+ *           A valid CSS selector, which will be passed to `querySelector`.
+ *
+ * @param    {Element|String} [context=document]
+ *           A DOM element within which to query. Can also be a selector
+ *           string in which case the first matching element will be used
+ *           as context. If missing (or no element matches selector), falls
+ *           back to `document`.
+ *
+ * @return   {Element|null}
+ */
+var $ = createQuerier('querySelector');
+
+exports.$ = $;
+/**
+ * Finds a all DOM elements matching `selector` within the optional
+ * `context` of another DOM element (defaulting to `document`).
+ *
+ * @function $$
+ * @param    {String} selector
+ *           A valid CSS selector, which will be passed to `querySelectorAll`.
+ *
+ * @param    {Element|String} [context=document]
+ *           A DOM element within which to query. Can also be a selector
+ *           string in which case the first matching element will be used
+ *           as context. If missing (or no element matches selector), falls
+ *           back to `document`.
+ *
+ * @return   {NodeList}
+ */
+var $$ = createQuerier('querySelectorAll');
+exports.$$ = $$;
+
+},{"./guid.js":130,"./log.js":131,"global/document":1,"global/window":2,"tsml":54}],127:[function(_dereq_,module,exports){
 /**
  * @file events.js
  *
@@ -16667,7 +17856,7 @@ function _handleMultipleEvents(fn, elem, types, callback) {
   });
 }
 
-},{"./dom.js":123,"./guid.js":127,"global/document":1,"global/window":2}],125:[function(_dereq_,module,exports){
+},{"./dom.js":126,"./guid.js":130,"global/document":1,"global/window":2}],128:[function(_dereq_,module,exports){
 /**
  * @file fn.js
  */
@@ -16711,7 +17900,7 @@ var bind = function bind(context, fn, uid) {
 };
 exports.bind = bind;
 
-},{"./guid.js":127}],126:[function(_dereq_,module,exports){
+},{"./guid.js":130}],129:[function(_dereq_,module,exports){
 /**
  * @file format-time.js
  *
@@ -16761,7 +17950,7 @@ function formatTime(seconds) {
 exports['default'] = formatTime;
 module.exports = exports['default'];
 
-},{}],127:[function(_dereq_,module,exports){
+},{}],130:[function(_dereq_,module,exports){
 /**
  * @file guid.js
  *
@@ -16786,7 +17975,7 @@ function newGUID() {
   return _guid++;
 }
 
-},{}],128:[function(_dereq_,module,exports){
+},{}],131:[function(_dereq_,module,exports){
 /**
  * @file log.js
  */
@@ -16876,7 +18065,7 @@ function _logType(type, args) {
 exports['default'] = log;
 module.exports = exports['default'];
 
-},{"global/window":2}],129:[function(_dereq_,module,exports){
+},{"global/window":2}],132:[function(_dereq_,module,exports){
 /**
  * @file merge-options.js
  */
@@ -16947,7 +18136,7 @@ function mergeOptions() {
 
 module.exports = exports['default'];
 
-},{"lodash-compat/object/merge":40}],130:[function(_dereq_,module,exports){
+},{"lodash-compat/object/merge":40}],133:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -16975,7 +18164,7 @@ var setTextContent = function setTextContent(el, content) {
 };
 exports.setTextContent = setTextContent;
 
-},{"global/document":1}],131:[function(_dereq_,module,exports){
+},{"global/document":1}],134:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -17046,7 +18235,7 @@ function rangeCheck(fnName, index, maxIndex) {
   }
 }
 
-},{"./log.js":128}],132:[function(_dereq_,module,exports){
+},{"./log.js":131}],135:[function(_dereq_,module,exports){
 /**
  * @file to-title-case.js
  *
@@ -17067,7 +18256,7 @@ function toTitleCase(string) {
 exports["default"] = toTitleCase;
 module.exports = exports["default"];
 
-},{}],133:[function(_dereq_,module,exports){
+},{}],136:[function(_dereq_,module,exports){
 /**
  * @file url.js
  */
@@ -17189,8 +18378,8 @@ exports.getFileExtension = getFileExtension;
  * @method isCrossOrigin
  */
 var isCrossOrigin = function isCrossOrigin(url) {
-  var urlInfo = parseUrl(url);
   var winLoc = _globalWindow2['default'].location;
+  var urlInfo = parseUrl(url);
 
   // IE8 protocol relative urls will return ':' for protocol
   var srcProtocol = urlInfo.protocol === ':' ? winLoc.protocol : urlInfo.protocol;
@@ -17203,7 +18392,7 @@ var isCrossOrigin = function isCrossOrigin(url) {
 };
 exports.isCrossOrigin = isCrossOrigin;
 
-},{"global/document":1,"global/window":2}],134:[function(_dereq_,module,exports){
+},{"global/document":1,"global/window":2}],137:[function(_dereq_,module,exports){
 /**
  * @file video.js
  */
@@ -17303,6 +18492,10 @@ var _xhr2 = _interopRequireDefault(_xhr);
 
 // Include the built-in techs
 
+var _techTechJs = _dereq_('./tech/tech.js');
+
+var _techTechJs2 = _interopRequireDefault(_techTechJs);
+
 var _techHtml5Js = _dereq_('./tech/html5.js');
 
 var _techHtml5Js2 = _interopRequireDefault(_techHtml5Js);
@@ -17381,10 +18574,10 @@ var videojs = function videojs(id, options, ready) {
 };
 
 // Add default styles
-var style = _globalDocument2['default'].querySelector('.vjs-styles-defaults');
+var style = Dom.$('.vjs-styles-defaults');
 if (!style) {
   style = stylesheet.createStyleElement('vjs-styles-defaults');
-  var head = _globalDocument2['default'].querySelector('head');
+  var head = Dom.$('head');
   head.insertBefore(style, head.firstChild);
   stylesheet.setTextContent(style, '\n    .video-js {\n      width: 300px;\n      height: 150px;\n    }\n\n    .vjs-fluid {\n      padding-top: 56.25%\n    }\n  ');
 }
@@ -17398,7 +18591,7 @@ setup.autoSetupTimeout(1, videojs);
  *
  * @type {String}
  */
-videojs.VERSION = '5.0.2';
+videojs.VERSION = '5.2.2';
 
 /**
  * The global options object. These are the settings that take effect
@@ -17476,7 +18669,50 @@ videojs.getComponent = _component2['default'].getComponent;
  * @mixes videojs
  * @method registerComponent
  */
-videojs.registerComponent = _component2['default'].registerComponent;
+videojs.registerComponent = function (name, comp) {
+  if (_techTechJs2['default'].isTech(comp)) {
+    _utilsLogJs2['default'].warn('The ' + name + ' tech was registered as a component. It should instead be registered using videojs.registerTech(name, tech)');
+  }
+
+  _component2['default'].registerComponent.call(_component2['default'], name, comp);
+};
+
+/**
+ * Get a Tech class object by name
+ * ```js
+ *     var Html5 = videojs.getTech('Html5');
+ *     // Create a new instance of the component
+ *     var html5 = new Html5(options);
+ * ```
+ *
+ * @return {Tech} Tech identified by name
+ * @mixes videojs
+ * @method getComponent
+ */
+videojs.getTech = _techTechJs2['default'].getTech;
+
+/**
+ * Register a Tech so it can referred to by name.
+ * This is used in the tech order for the player.
+ *
+ * ```js
+ *     // get the Html5 Tech
+ *     var Html5 = videojs.getTech('Html5');
+ *     var MyTech = videojs.extend(Html5, {});
+ *     // Register the new Tech
+ *     VjsButton.registerTech('Tech', MyTech);
+ *     var player = videojs('myplayer', {
+ *       techOrder: ['myTech', 'html5']
+ *     });
+ * ```
+ *
+ * @param {String} The class name of the tech
+ * @param {Tech} The tech class
+ * @return {Tech} The newly registered Tech
+ * @mixes videojs
+ * @method registerTech
+ */
+videojs.registerTech = _techTechJs2['default'].registerTech;
 
 /**
  * A suite of browser and device tests
@@ -17556,9 +18792,9 @@ videojs.extend = _extendJs2['default'];
  *     // result.bar.b = [4,5,6];
  * ```
  *
- * @param {Object} The options object whose values will be overriden
- * @param {Object} The options object with values to override the first
- * @param {Object} Any number of additional options objects
+ * @param {Object} defaults  The options object whose values will be overriden
+ * @param {Object} overrides The options object with values to override the first
+ * @param {Object} etc       Any number of additional options objects
  *
  * @return {Object} a new object with the merged values
  * @mixes videojs
@@ -17623,8 +18859,8 @@ videojs.bind = Fn.bind;
  *     // --> Should alert 'Plugin added later!'
  * ```
  *
- * @param {String} The plugin name
- * @param {Function} The plugin function that will be called with options
+ * @param {String} name The plugin name
+ * @param {Function} fn The plugin function that will be called with options
  * @mixes videojs
  * @method plugin
  */
@@ -17777,22 +19013,149 @@ videojs.xhr = _xhr2['default'];
  */
 videojs.TextTrack = _tracksTextTrackJs2['default'];
 
-// REMOVING: We probably should add this to the migration plugin
-// // Expose but deprecate the window[componentName] method for accessing components
-// Object.getOwnPropertyNames(Component.components).forEach(function(name){
-//   let component = Component.components[name];
-//
-//   // A deprecation warning as the constuctor
-//   module.exports[name] = function(player, options, ready){
-//     log.warn('Using videojs.'+name+' to access the '+name+' component has been deprecated. Please use videojs.getComponent("componentName")');
-//
-//     return new Component(player, options, ready);
-//   };
-//
-//   // Allow the prototype and class methods to be accessible still this way
-//   // Though anything that attempts to override class methods will no longer work
-//   assign(module.exports[name], component);
-// });
+/**
+ * Determines, via duck typing, whether or not a value is a DOM element.
+ *
+ * @method isEl
+ * @param  {Mixed} value
+ * @return {Boolean}
+ */
+videojs.isEl = Dom.isEl;
+
+/**
+ * Determines, via duck typing, whether or not a value is a text node.
+ *
+ * @method isTextNode
+ * @param  {Mixed} value
+ * @return {Boolean}
+ */
+videojs.isTextNode = Dom.isTextNode;
+
+/**
+ * Check if an element has a CSS class
+ *
+ * @method hasClass
+ * @param {Element} element Element to check
+ * @param {String} classToCheck Classname to check
+ */
+videojs.hasClass = Dom.hasElClass;
+
+/**
+ * Add a CSS class name to an element
+ *
+ * @method addClass
+ * @param {Element} element    Element to add class name to
+ * @param {String} classToAdd Classname to add
+ */
+videojs.addClass = Dom.addElClass;
+
+/**
+ * Remove a CSS class name from an element
+ *
+ * @method removeClass
+ * @param {Element} element    Element to remove from class name
+ * @param {String} classToRemove Classname to remove
+ */
+videojs.removeClass = Dom.removeElClass;
+
+/**
+ * Adds or removes a CSS class name on an element depending on an optional
+ * condition or the presence/absence of the class name.
+ *
+ * @method toggleElClass
+ * @param  {Element} element
+ * @param  {String} classToToggle
+ * @param  {Boolean|Function} [predicate]
+ *         Can be a function that returns a Boolean. If `true`, the class
+ *         will be added; if `false`, the class will be removed. If not
+ *         given, the class will be added if not present and vice versa.
+ */
+videojs.toggleClass = Dom.toggleElClass;
+
+/**
+ * Apply attributes to an HTML element.
+ *
+ * @method setAttributes
+ * @param  {Element} el         Target element.
+ * @param  {Object=} attributes Element attributes to be applied.
+ */
+videojs.setAttributes = Dom.setElAttributes;
+
+/**
+ * Get an element's attribute values, as defined on the HTML tag
+ * Attributes are not the same as properties. They're defined on the tag
+ * or with setAttribute (which shouldn't be used with HTML)
+ * This will return true or false for boolean attributes.
+ *
+ * @method getAttributes
+ * @param  {Element} tag Element from which to get tag attributes
+ * @return {Object}
+ */
+videojs.getAttributes = Dom.getElAttributes;
+
+/**
+ * Empties the contents of an element.
+ *
+ * @method emptyEl
+ * @param  {Element} el
+ * @return {Element}
+ */
+videojs.emptyEl = Dom.emptyEl;
+
+/**
+ * Normalizes and appends content to an element.
+ *
+ * The content for an element can be passed in multiple types and
+ * combinations, whose behavior is as follows:
+ *
+ * - String
+ *   Normalized into a text node.
+ *
+ * - Element, TextNode
+ *   Passed through.
+ *
+ * - Array
+ *   A one-dimensional array of strings, elements, nodes, or functions (which
+ *   return single strings, elements, or nodes).
+ *
+ * - Function
+ *   If the sole argument, is expected to produce a string, element,
+ *   node, or array.
+ *
+ * @method appendContent
+ * @param  {Element} el
+ * @param  {String|Element|TextNode|Array|Function} content
+ * @return {Element}
+ */
+videojs.appendContent = Dom.appendContent;
+
+/**
+ * Normalizes and inserts content into an element; this is identical to
+ * `appendContent()`, except it empties the element first.
+ *
+ * The content for an element can be passed in multiple types and
+ * combinations, whose behavior is as follows:
+ *
+ * - String
+ *   Normalized into a text node.
+ *
+ * - Element, TextNode
+ *   Passed through.
+ *
+ * - Array
+ *   A one-dimensional array of strings, elements, nodes, or functions (which
+ *   return single strings, elements, or nodes).
+ *
+ * - Function
+ *   If the sole argument, is expected to produce a string, element,
+ *   node, or array.
+ *
+ * @method insertContent
+ * @param  {Element} el
+ * @param  {String|Element|TextNode|Array|Function} content
+ * @return {Element}
+ */
+videojs.insertContent = Dom.insertContent;
 
 /*
  * Custom Universal Module Definition (UMD)
@@ -17814,7 +19177,7 @@ if (typeof define === 'function' && define['amd']) {
 exports['default'] = videojs;
 module.exports = exports['default'];
 
-},{"../../src/js/utils/merge-options.js":129,"./component":63,"./event-target":95,"./extend.js":96,"./player":103,"./plugins.js":104,"./setup":106,"./tech/flash.js":109,"./tech/html5.js":110,"./tracks/text-track.js":119,"./utils/browser.js":120,"./utils/create-deprecation-proxy.js":122,"./utils/dom.js":123,"./utils/events.js":124,"./utils/fn.js":125,"./utils/format-time.js":126,"./utils/log.js":128,"./utils/stylesheet.js":130,"./utils/time-ranges.js":131,"./utils/url.js":133,"global/document":1,"lodash-compat/object/merge":40,"object.assign":45,"xhr":55}]},{},[134])(134)
+},{"../../src/js/utils/merge-options.js":132,"./component":65,"./event-target":97,"./extend.js":98,"./player":106,"./plugins.js":107,"./setup":109,"./tech/flash.js":112,"./tech/html5.js":113,"./tech/tech.js":115,"./tracks/text-track.js":122,"./utils/browser.js":123,"./utils/create-deprecation-proxy.js":125,"./utils/dom.js":126,"./utils/events.js":127,"./utils/fn.js":128,"./utils/format-time.js":129,"./utils/log.js":131,"./utils/stylesheet.js":133,"./utils/time-ranges.js":134,"./utils/url.js":136,"global/document":1,"lodash-compat/object/merge":40,"object.assign":45,"xhr":55}]},{},[137])(137)
 });
 
 
@@ -19770,4 +21133,4 @@ module.exports = exports['default'];
 
 }(this, (this.vttjs || {})));
 
-!function(){!function(a){var b=a&&a.videojs;if(b){b.CDN_VERSION="5.0.2";var c="https:"===a.location.protocol?"https://":"http://";b.options.flash.swf=c+"vjs.zencdn.net/swf/5.0.0-rc1/video-js.swf"}}(window),function(a,b,c,d,e,f,g){b&&b.HELP_IMPROVE_VIDEOJS!==!1&&(e.random()>.01||(f=b.location,g=b.videojs||{},a.src="//www.google-analytics.com/__utm.gif?utmwv=5.4.2&utmac=UA-16505296-3&utmn=1&utmhn="+d(f.hostname)+"&utmsr="+b.screen.availWidth+"x"+b.screen.availHeight+"&utmul="+(c.language||c.userLanguage||"").toLowerCase()+"&utmr="+d(f.href)+"&utmp="+d(f.hostname+f.pathname)+"&utmcc=__utma%3D1."+e.floor(1e10*e.random())+".1.1.1.1%3B&utme=8(vjsv*cdnv)9("+g.VERSION+"*"+g.CDN_VERSION+")"))}(new Image,window,navigator,encodeURIComponent,Math)}();
+!function(){!function(a){var b=a&&a.videojs;if(b){b.CDN_VERSION="5.2.2";var c="https:"===a.location.protocol?"https://":"http://";b.options.flash.swf=c+"vjs.zencdn.net/swf/5.0.1/video-js.swf"}}(window),function(a,b,c,d,e,f,g){b&&b.HELP_IMPROVE_VIDEOJS!==!1&&(e.random()>.01||(f=b.location,g=b.videojs||{},a.src="//www.google-analytics.com/__utm.gif?utmwv=5.4.2&utmac=UA-16505296-3&utmn=1&utmhn="+d(f.hostname)+"&utmsr="+b.screen.availWidth+"x"+b.screen.availHeight+"&utmul="+(c.language||c.userLanguage||"").toLowerCase()+"&utmr="+d(f.href)+"&utmp="+d(f.hostname+f.pathname)+"&utmcc=__utma%3D1."+e.floor(1e10*e.random())+".1.1.1.1%3B&utme=8(vjsv*cdnv)9("+g.VERSION+"*"+g.CDN_VERSION+")"))}(new Image,window,navigator,encodeURIComponent,Math)}();

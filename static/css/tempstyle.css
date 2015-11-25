@@ -111,7 +111,7 @@ a.button.bigrounded {
 }
 .panel-title {
 	height: 30px;
-	width: auto;
+	width: 100%;
 	font-size: 10px;
 	margin-left: -3px;
 }
@@ -150,7 +150,7 @@ ul {
 }
 .content-box-header {
 	height: 38px;
-	width: auto;
+	width: 100%;
 	background-color: #00A651;
 	border-radius: 6px;
 	/*background-image: url(http://109.123.177.216/img/logo.png);*/
@@ -160,9 +160,11 @@ ul {
 .content-box {
 	height: 460px;
 	width: auto;
-	margin-top: 3px;
+	margin-top: 3px;   
+	margin-bottom: 3px;
 	border-radius: 6px;
 	border: 2px solid #00A651;
+	
 }
 .nav.nav-tabs {
 	padding-top: 6px;
@@ -197,17 +199,88 @@ ul {
 	padding-left: 15px;
 }
 .editor{
-	display: block;
+	display:block;
 	width:390px;
 	height:400px;
 	border:solid 1px #EEEEEE;
 	background-color:#EEEEEE;
 	border-radius: 6px;
-	margin-top: -224px;
+	margin-top: 4px;
 	margin-right: 4px;
 	margin-bottom: 4px;
-	margin-left: 4px;  
+	margin-left: 4px;      
+	float:left;
+	position:absolute;
+ 
 }
+#for_video{
+
+
+width:auto;         
+height:auto;
+float:left;        
+position: relative;
+top: 4px;      
+left: 404px;
+}  
+                
+.progress{                                             
+/*outline:solid 1px #7D00B9;*/   
+                      
+width: 400px;                                          
+height: 90px;                                          
+max-height: 90px;                                      
+overflow-x: auto;                                      
+overflow-y: auto;                                      
+background-color: #000;                                
+font-family: "Courier New", Courier, monospace;        
+color: #00FF00;                                        
+border:solid 1px #FFFFFF;                              
+border-radius:4px;                                     
+                                    
+margin-right:4px;
+margin-top:4px;
+                                      
+                                     
+                                    
+font-size:12px;  
+position: relative;                                      
+top: 226px;
+
+float:left;                                                                 
+      
+ }
+                                                      
+.progress::-webkit-scrollbar{                          
+    width:10px;                                        
+                                                       
+}                                                      
+.progress::-webkit-scrollbar{                          
+    height:10px;                                       
+                                                       
+}                                                      
+                                                       
+.progress::-webkit-scrollbar-thumb{                    
+    border-width:1px 1px 1px 2px;                      
+    border-color: #777;                                
+    background-color: #4A4A4A;                         
+}                                                      
+.progress::-webkit-scrollbar-thumb:hover{              
+    border-width: 1px 1px 1px 2px;                     
+    border-color: #555;                                
+    background-color: #777;                            
+}                                                      
+.progress::-webkit-scrollbar-track{                    
+    border-width:0;                                    
+}                                                      
+.progress::-webkit-scrollbar-track:hover{              
+   /* border-left: solid 1px #aaa;*/                   
+    background-color: #000;                            
+}                                                      
+.progress::-webkit-scrollbar-corner{                   
+ background-color: #000;                               
+}                                                      
+                                                       
 
 /*Select Box example http://codepen.io/ericrasch/pen/zjDBx */
 
@@ -248,57 +321,6 @@ ul {
 
 
 /*End of Select Box example */
-
-.progress{
-/*outline:solid 1px #7D00B9;*/
-width: 390px;
-height: 90px;
-max-height: 90px;
-overflow-x: auto;
-overflow-y: auto;
-background-color: #000;
-font-family: "Courier New", Courier, monospace;
-color: #00FF00;
-border:solid 1px #FFFFFF;
-border-radius:4px;
-margin-top: -230px;     
-margin-right:4px;    
-margin-bottom:4px;   
-margin-left: 400px;
-font-size:12px;
-  
-}
-.progress::-webkit-scrollbar{
-    width:10px;
-  
-}
-.progress::-webkit-scrollbar{ 
-    height:10px;               
-                              
-}                             
-
-.progress::-webkit-scrollbar-thumb{
-    border-width:1px 1px 1px 2px;
-    border-color: #777;
-    background-color: #4A4A4A;
-}
-.progress::-webkit-scrollbar-thumb:hover{
-    border-width: 1px 1px 1px 2px;
-    border-color: #555;
-    background-color: #777;
-}
-.progress::-webkit-scrollbar-track{
-    border-width:0;
-}
-.progress::-webkit-scrollbar-track:hover{
-   /* border-left: solid 1px #aaa;*/
-    background-color: #000;
-}
-.progress::-webkit-scrollbar-corner{
- background-color: #000;
-}
-
-
 
 
 ul.dropdown li {
@@ -376,4 +398,30 @@ padding-left: 4px;
 float:right;
 }
 
+#main_app:-webkit-full-screen { 
+width: 100%;
+height: 100%;
 
+}
+
+#main_app:-moz-full-screen { width: 100% }
+
+#main_app:-ms-full-screen { width: 100% }
+
+#main_app:-o-full-screen { width: 100% }
+
+#main_app:full-screen { width: 100% }
+
+:-webkit-full-screen .video-js {
+width: 950px;
+height: 535px; 
+float:left;
+}
+
+:-webkit-full-screen .progress {                                                                                        
+margin-right:4px;                                    
+margin-top:4px;                                                                                                                                                                                                                                          
+position: relative;                                  
+top: 226px;                                                                                               
+float:left;                                          
+}                                                     

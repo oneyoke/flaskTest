@@ -8,7 +8,7 @@
     <script src="{{ url_for('static', filename='lib/contrib/ace/ace.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/contrib/ace/mode-c_cpp.js') }}"></script>
     <link href="/static/css/tempstyle.css" rel="stylesheet" media="screen">
-    <link href="/static/css/videostyle.css" rel="stylesheet" media="screen">
+    <link href="/static/css/video.css" rel="stylesheet" media="screen">
     <link href="/static/css/video-quality-selector.css" rel="stylesheet" media="screen">
     <!-- <script src="{{ url_for('static', filename='lib/contrib/ace/theme-monkai.js') }}"></script> -->
     <script src="{{ url_for('static', filename='js/tempscript.js') }}"></script>
@@ -25,7 +25,7 @@
 <body>
 
 
-    <div id="main_app" style="min-width: 500px; min-height: 100pt; width:800px; margin: 0 auto; padding:0px; display: block; ">
+    <div id="main_app" class="main_app" style="min-height: 100pt; width:100%; height:100%; margin: 0 auto; padding:0px; ">
     	
        <div class="content-box-header"><!--Начало блока "content-box-header"-->
 			<div class="panel-title"><!--Начало блока "panel-title"-->
@@ -63,21 +63,14 @@
 			
 			</div><!--Конец блока "panel-title"-->
                     
-
-            	
-            	
-		
-			 	                          
-                         
-                         
-
+            	            						 	                                                           
     	</div><!--Конец блока "content-box-header"-->
                     
-       <div class="content-box"><!--Начало блока "content-box"-->
+       <div class="content-box" ><!--Начало блока "content-box"-->
        
-			<div  style=" width:500px; height: 460px; float:left;"><!--Начало объединяющего блока-->
-
-				<div><!--Начало блока "editor"-->
+			<div  style=" width:100%; height:100%; float:left;"><!--Начало объединяющего блока-->
+			
+				<div id="for_video" class="for_video" style="float:left;"><!--Начало блока "for_video"-->
 
 
 	<video id="my-video" class="video-js vjs-default-skin" controls autoplay="autoplay" data-setup='{ "plugins" : { "resolutionSelector" : { "default_res" : "576" } } }'>                                   
@@ -93,13 +86,16 @@
 		 </p>                                                                                         
 	</video>                                                                                              
 
-	  
+	                              	</div><!--Конец блока "for_video"-->
+
+
+  
 					<div class="editor" id="editor"></div>
-                                          
+                                       <div id="progress" class="progress"></div>   
 			
  	                          
-                      		</div><!--Конец блока "editor"-->
-                      	<div id="progress" class="progress"></div> 	
+                      	
+                      		
                       		
 			</div> <!--Конец объединяющего блока -->
 		                                                   			     
@@ -107,6 +103,6 @@
 
 	</div>
 
-<img src="http://109.123.138.152:8080/mpjpeg" alt="image">
+<!--<img src="http://109.123.138.152:8080/mpjpeg" alt="image">-->
 			<ul id="errorsList"></ul>  
 </body></html>
