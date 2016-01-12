@@ -49,4 +49,7 @@ width: 1345px;
   
 :-webkit-full-screen .editor {                                                 
 min-height: 535px;                                                             
-}                                                                              
+}                                    
+
+:-webkit-full-screen {                                                  
+}                                    
