@@ -277,5 +277,20 @@ window.addEvent('domready', function() {
             }
         });
 
+        $('myonoffswitch').addEvent('click', function(e){
+            //e.stop();
+            if (!this.checked) {
+                $('my-video_html5_api').pause();
+                $('my-video').hide();
+                $('for_video').appendHTML('<div id=videompjpeg><img width="390" height="220" src="http://109.123.138.152:8080/mpjpeg" alt="image"><div>');
+            };
+            if (this.checked) {
+                $('videompjpeg').getElements('img').set('src','#');
+                $('videompjpeg').remove();
+                $('my-video').show();
+                $('my-video_html5_api').play();
+            };
+        });
+
 
     });
