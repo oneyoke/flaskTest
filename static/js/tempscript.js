@@ -268,5 +268,14 @@ window.addEvent('domready', function() {
             }
 
         });
+        $('videoButton').addEvent('click', function(e){
+            e.stop();
+            if ($('for_video').getElements('img').length == 0) {
+                $('my-video_html5_api').pause();
+                $('my-video').hide();
+                $('for_video').appendHTML('<img width="390" height="220" src="http://109.123.138.152:8080/mpjpeg" alt="image">');
+            }
+        });
+
 
     });
