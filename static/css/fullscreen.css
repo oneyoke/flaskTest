@@ -1,0 +1,52 @@
+#main_app:-webkit-full-screen {                                                
+min-width:1350px;                                                              
+width: 1350px;                                                                 
+height: 100%;                                                                                                                                                
+}                                                                              
+ 
+#main_app:-moz-full-screen {                                                   
+min-width:1350px;                                                              
+width: 1350px;                                                                 
+ }                                                                             
+   
+#main_app:-ms-full-screen {                                                    
+min-width:1350px;                                                              
+width: 1350px;                                                                 
+}                                                                              
+   
+#main_app:-o-full-screen {                                                     
+min-width:1350px;                                                              
+width: 1350px;                                                                 
+ }                                                                             
+   
+#main_app:full-screen {                                                        
+min-width:1350px;                                                              
+width: 1350px;                                                                 
+ }                                                                             
+   
+:-webkit-full-screen .video-js {                                               
+width: 930px;                                                                  
+height: 535px;                                                                 
+float:left;                                                                    
+}                                                                              
+   
+:-webkit-full-screen .progress {                                               
+position: relative;                                                            
+float: right;                                                                  
+top: 542px;                                                                    
+left:-948px;                                                                                                                                                  
+}                                                                              
+  
+:-webkit-full-screen .content-box-header {                                     
+height: 38px;                                                                  
+width: 1350px;                                                                 
+}                                                                              
+   
+:-webkit-full-screen .content-box {                                            
+height: 94%;                                                                   
+width: 1345px;                                                                 
+}                                                                              
+  
+:-webkit-full-screen .editor {                                                 
+min-height: 535px;                                                             
+}                                                                              

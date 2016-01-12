@@ -150,7 +150,7 @@ ul {
 }
 .content-box-header {
 	height: 38px;
-	width: 100%;
+	width: 805px;
 	background-color: #00A651;
 	border-radius: 6px;
 	/*background-image: url(http://109.123.177.216/img/logo.png);*/
@@ -159,7 +159,7 @@ ul {
 }
 .content-box {
 	height: 460px;
-	width: auto;
+	width: 800px;
 	margin-top: 3px;   
 	margin-bottom: 3px;
 	border-radius: 6px;
@@ -227,7 +227,7 @@ left: 404px;
 .progress{                                             
 /*outline:solid 1px #7D00B9;*/   
                       
-width: 400px;                                          
+width: 390px;                                          
 height: 90px;                                          
 max-height: 90px;                                      
 overflow-x: auto;                                      
@@ -237,16 +237,12 @@ font-family: "Courier New", Courier, monospace;
 color: #00FF00;                                        
 border:solid 1px #FFFFFF;                              
 border-radius:4px;                                     
-                                    
-margin-right:4px;
-margin-top:4px;
-                                      
-                                     
-                                    
+margin-right:2px;
+margin-left:10px;
+margin-top:4px;                                                                                                             
 font-size:12px;  
 position: relative;                                      
 top: 226px;
-
 float:left;                                                                 
       
  }
@@ -398,30 +394,59 @@ padding-left: 4px;
 float:right;
 }
 
-#main_app:-webkit-full-screen { 
-width: 100%;
-height: 100%;
 
-}
 
-#main_app:-moz-full-screen { width: 100% }
 
-#main_app:-ms-full-screen { width: 100% }
 
-#main_app:-o-full-screen { width: 100% }
 
-#main_app:full-screen { width: 100% }
 
-:-webkit-full-screen .video-js {
-width: 950px;
-height: 535px; 
-float:left;
-}
 
-:-webkit-full-screen .progress {                                                                                        
-margin-right:4px;                                    
-margin-top:4px;                                                                                                                                                                                                                                          
-position: relative;                                  
-top: 226px;                                                                                               
-float:left;                                          
-}                                                     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                   
+
+                                                                                                                                                                                     
+
+
+
+                                                    
+
+
+
+
+
+
+
+
+                                 
+
+
+
+
+                               
+                                   
+              
